@@ -1,6 +1,5 @@
 package micdoodle8.mods.galacticraft.core.recipe.legacy;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,30 +7,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.HashSet;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
+
+import net.minecraft.item.ItemStack;
 
 import org.junit.jupiter.api.Test;
 
 import micdoodle8.mods.galacticraft.core.nei.LegacyRocketBenchNei;
+import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyTier3RocketRecipes;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyCargoRocketRecipes;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyTier2RocketRecipes;
 
 /**
- * Guards the restored Tier-1 rocket bench data and its NEI display table.
+ * Guards the restored NASA-bench data and the NEI coordinate tables.
  *
  * <p>
  * These are the parts most likely to be broken by a bad rebase against GTNH: the recipe maps are hand-written slot
- * indices and the NEI table is a hand-written coordinate list. Everything asserted here is plain data (no Minecraft
- * bootstrap required).
+ * indices and the NEI tables are hand-written coordinate lists. The plain-data assertions run everywhere; the ones that
+ * build {@code ItemStack}s are skipped when the game classes (and Galacticraft's {@code compileOnly} dependencies) are
+ * not on the test classpath.
  */
 class LegacyContentTest {
 
     private static Boolean recipesUsable;
 
-    /**
-     * Building {@code ItemStack}s needs the game classes plus Galacticraft's {@code compileOnly} dependencies, which
-     * are not all on the plain-JUnit classpath. Skip those assertions rather than fail the build; the plain-data
-     * assertions below still run everywhere.
-     */
     private static boolean recipesUsable() {
         if (recipesUsable == null) {
             try {
@@ -44,34 +44,42 @@ class LegacyContentTest {
         return recipesUsable;
     }
 
-    @Test
-    void tier1HasEightVariants() {
-        assertEquals(8, LegacyTier1RocketRecipes.CARGO_MASKS.length);
-        assertEquals(8, LegacyTier1RocketRecipes.OUTPUT_METAS.length);
-    }
+    // ---------------------------------------------------------------- cargo layout
 
     @Test
-    void tier1CargoMasksAreTheSevenDistinctNonEmptyCombinations() {
+    void cargoLayoutHasEightDistinctVariants() {
+        assertEquals(8, LegacyCargoLayout.COUNT);
+        assertEquals(8, LegacyCargoLayout.MASKS.length);
+        assertEquals(8, LegacyCargoLayout.OUTPUT_METAS.length);
+
         final Set<Integer> masks = new HashSet<>();
-        for (final int mask : LegacyTier1RocketRecipes.CARGO_MASKS) {
+        for (final int mask : LegacyCargoLayout.MASKS) {
             assertTrue(mask >= 0 && mask <= 0x7, "cargo mask out of range: " + mask);
             assertTrue(masks.add(mask), "duplicate cargo mask: " + mask);
         }
-        // basic rocket (no chest) plus all seven non-empty subsets of the three add-on slots
-        assertEquals(8, masks.size());
     }
 
     @Test
-    void tier1CargoMaskMatchesItsOutputMeta() {
-        // 0 chests -> tier 0, 1 -> tier 1, 2 -> tier 2, 3 -> tier 3
-        for (int i = 0; i < LegacyTier1RocketRecipes.CARGO_MASKS.length; i++) {
-            final int chests = Integer.bitCount(LegacyTier1RocketRecipes.CARGO_MASKS[i]);
+    void cargoMetaEqualsChestCount() {
+        for (int i = 0; i < LegacyCargoLayout.COUNT; i++) {
+            final int chests = Integer.bitCount(LegacyCargoLayout.MASKS[i]);
             assertEquals(
                     chests,
-                    LegacyTier1RocketRecipes.OUTPUT_METAS[i],
-                    "variant " + i + " has " + chests + " chests but meta " + LegacyTier1RocketRecipes.OUTPUT_METAS[i]);
+                    LegacyCargoLayout.OUTPUT_METAS[i],
+                    "variant " + i + " has " + chests + " chests but meta " + LegacyCargoLayout.OUTPUT_METAS[i]);
         }
     }
+
+    @Test
+    void hasChestReadsTheRightBit() {
+        assertTrue(LegacyCargoLayout.hasChest(0x1, 0));
+        assertTrue(LegacyCargoLayout.hasChest(0x2, 1));
+        assertTrue(LegacyCargoLayout.hasChest(0x4, 2));
+        assertTrue(!LegacyCargoLayout.hasChest(0x0, 0));
+        assertTrue(!LegacyCargoLayout.hasChest(0x1, 1));
+    }
+
+    // ---------------------------------------------------------------- recipe maps
 
     @Test
     void tier1VariantCoversEverySlotAndPinsTheCargoSlots() {
@@ -93,48 +101,104 @@ class LegacyContentTest {
         }
     }
 
+    // ---------------------------------------------------------------- NEI tables
+
     @Test
-    void tier1NonCargoSlotsAreAlwaysPopulated() {
+    void everyRecipeSlotHasAnNeiPosition() {
         assumeTrue(recipesUsable(), "game classes are not on the test classpath");
 
-        for (final LegacyTier1RocketRecipes.Variant variant : LegacyTier1RocketRecipes.variants()) {
-            for (final Entry<Integer, net.minecraft.item.ItemStack> slot : variant.input.entrySet()) {
-                final boolean cargo = slot.getKey() >= 15 && slot.getKey() <= 17;
-                if (!cargo) {
-                    assertNotNull(slot.getValue(), "slot " + slot.getKey() + " must have a part");
+        for (final LegacyTier1RocketRecipes.Variant v : LegacyTier1RocketRecipes.variants()) {
+            assertEverySlotMapped(LegacyRocketBenchNei.BENCH_TIER1, v.input, "Tier 1");
+        }
+        for (final LegacyTier2RocketRecipes.Variant v : LegacyTier2RocketRecipes.variants()) {
+            assertEverySlotMapped(LegacyRocketBenchNei.BENCH_TIER2_3, v.input, "Tier 2");
+        }
+        for (final LegacyTier3RocketRecipes.Variant v : LegacyTier3RocketRecipes.variants()) {
+            assertEverySlotMapped(LegacyRocketBenchNei.BENCH_TIER2_3, v.input, "Tier 3");
+        }
+        for (final LegacyCargoRocketRecipes.Variant v : LegacyCargoRocketRecipes.variants()) {
+            assertEverySlotMapped(LegacyRocketBenchNei.BENCH_CARGO, v.input, "Cargo");
+        }
+    }
+
+    private static void assertEverySlotMapped(int bench, Map<Integer, ItemStack> input, String name) {
+        for (final Map.Entry<Integer, ItemStack> slot : input.entrySet()) {
+            if (slot.getValue() == null) {
+                continue;
+            }
+            assertNotNull(
+                    LegacyRocketBenchNei.position(bench, slot.getKey()),
+                    name + " recipe slot " + slot.getKey() + " has no NEI position");
+        }
+    }
+
+    @Test
+    void neiTableCoversEveryBenchSlot() {
+        assertTableComplete(LegacyRocketBenchNei.BENCH_TIER1, LegacyTier1RocketRecipes.SLOT_COUNT);
+        assertTableComplete(LegacyRocketBenchNei.BENCH_TIER2_3, 21);
+        assertTableComplete(LegacyRocketBenchNei.BENCH_CARGO, 21);
+    }
+
+    private static void assertTableComplete(int bench, int maxSlot) {
+        for (int slot = 1; slot <= maxSlot; slot++) {
+            assertNotNull(
+                    LegacyRocketBenchNei.position(bench, slot),
+                    "NEI has no position for bench " + bench + " slot " + slot);
+        }
+        assertNull(LegacyRocketBenchNei.position(bench, 0), "slot 0 is the output and has no input position");
+        assertNull(
+                LegacyRocketBenchNei.position(bench, maxSlot + 1),
+                "bench " + bench + " should not define slot " + (maxSlot + 1));
+    }
+
+    @Test
+    void neiPositionsAreUniqueWithinEachBench() {
+        assertUnique(LegacyRocketBenchNei.BENCH_TIER1, 17);
+        assertUnique(LegacyRocketBenchNei.BENCH_TIER2_3, 21);
+        assertUnique(LegacyRocketBenchNei.BENCH_CARGO, 21);
+    }
+
+    private static void assertUnique(int bench, int maxSlot) {
+        final Set<Long> seen = new HashSet<>();
+        for (int slot = 1; slot <= maxSlot; slot++) {
+            final int[] pos = LegacyRocketBenchNei.position(bench, slot);
+            final long key = (long) pos[0] << 32 | pos[1] & 0xFFFFFFFFL;
+            assertTrue(seen.add(key), "duplicate NEI position for bench " + bench + " slot " + slot);
+        }
+    }
+
+    @Test
+    void neiPositionsAreInTheTextureFrame() {
+        // Every rocket bench texture is drawn as a 168x140 crop, with some inputs deliberately
+        // sitting slightly outside it (the cargo rocket's top row). Keep the check loose but real.
+        for (int bench = LegacyRocketBenchNei.BENCH_TIER1; bench <= LegacyRocketBenchNei.BENCH_CARGO; bench++) {
+            for (int slot = 1; slot <= LegacyRocketBenchNei.MAX_SLOT; slot++) {
+                final int[] pos = LegacyRocketBenchNei.position(bench, slot);
+                if (pos == null) {
+                    continue;
                 }
+                assertTrue(pos[0] >= 0 && pos[0] <= 168, "bench " + bench + " slot " + slot + " x " + pos[0]);
+                assertTrue(pos[1] >= -8 && pos[1] <= 140, "bench " + bench + " slot " + slot + " y " + pos[1]);
             }
         }
     }
 
     @Test
-    void neiTableDefinesEveryBenchSlotExactlyOnce() {
-        final Set<Long> seen = new HashSet<>();
-        for (int slot = 1; slot <= LegacyTier1RocketRecipes.SLOT_COUNT; slot++) {
-            final int[] pos = LegacyRocketBenchNei.neiPosition(slot);
-            assertNotNull(pos, "NEI has no position for bench slot " + slot);
-            assertEquals(2, pos.length);
-            assertTrue(seen.add((long) pos[0] << 32 | pos[1] & 0xFFFFFFFFL), "duplicate NEI position for slot " + slot);
-        }
-        assertNull(LegacyRocketBenchNei.neiPosition(0), "slot 0 is the output and has no input position");
-        assertNull(LegacyRocketBenchNei.neiPosition(18), "slot 18 does not exist");
-    }
-
-    @Test
-    void neiPositionsAreInTheTextureFrame() {
-        // rocketbench.png is drawn at (3,4) with a 168x130 crop; inputs must land inside it.
-        for (int slot = 1; slot <= LegacyTier1RocketRecipes.SLOT_COUNT; slot++) {
-            final int[] pos = LegacyRocketBenchNei.neiPosition(slot);
-            assertTrue(pos[0] >= 0 && pos[0] <= 168, "slot " + slot + " x out of frame: " + pos[0]);
-            assertTrue(pos[1] >= 0 && pos[1] <= 130, "slot " + slot + " y out of frame: " + pos[1]);
-        }
-    }
-
-    @Test
-    void neiTableIsACopy() {
-        final int[] pos = LegacyRocketBenchNei.neiPosition(1);
-        assertArrayEquals(new int[] { 45, 15 }, pos);
+    void neiPositionsAreCopies() {
+        final int[] pos = LegacyRocketBenchNei.position(LegacyRocketBenchNei.BENCH_TIER1, 1);
+        assertEquals(45, pos[0]);
+        assertEquals(15, pos[1]);
         pos[0] = -1;
-        assertArrayEquals(new int[] { 45, 15 }, LegacyRocketBenchNei.neiPosition(1), "caller mutated the table");
+        assertEquals(45, LegacyRocketBenchNei.position(LegacyRocketBenchNei.BENCH_TIER1, 1)[0], "table was mutated");
+    }
+
+    @Test
+    void everyBenchHasAnOutputPosition() {
+        for (int bench = LegacyRocketBenchNei.BENCH_TIER1; bench <= LegacyRocketBenchNei.BENCH_CARGO; bench++) {
+            final int[] out = LegacyRocketBenchNei.outputPosition(bench);
+            assertNotNull(out, "bench " + bench + " has no output position");
+            assertEquals(2, out.length);
+            assertTrue(out[0] > 0 && out[1] > 0, "bench " + bench + " output position looks wrong");
+        }
     }
 }

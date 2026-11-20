@@ -15,12 +15,16 @@ import micdoodle8.mods.galacticraft.core.Constants;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.nei.LegacyRocketBenchNei;
 import micdoodle8.mods.galacticraft.core.nei.NasaWorkbenchOverlayHandler;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks;
 import micdoodle8.mods.galacticraft.planets.mars.client.gui.GuiSchematicCargoRocket;
 import micdoodle8.mods.galacticraft.planets.mars.client.gui.GuiSchematicTier2Rocket;
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyCargoRocketRecipes;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyTier2RocketRecipes;
 
 public class NEIGalacticraftMarsConfig implements IConfigureNEI {
 
@@ -39,6 +43,9 @@ public class NEIGalacticraftMarsConfig implements IConfigureNEI {
             API.registerUsageHandler(new RocketT2RecipeHandler());
             API.addRecipeCatalyst(new ItemStack(GCBlocks.nasaWorkbench), rocketHandler);
         }
+        if (CompatGates.useLegacyContent()) {
+            this.addLegacyBenchRecipes();
+        }
         CargoRocketRecipeHandler cargoRocketHandler = new CargoRocketRecipeHandler();
         API.registerRecipeHandler(cargoRocketHandler);
         API.registerUsageHandler(new CargoRocketRecipeHandler());
@@ -54,6 +61,30 @@ public class NEIGalacticraftMarsConfig implements IConfigureNEI {
                 new NasaWorkbenchOverlayHandler(4, 16),
                 "galacticraft.cargoRocket");
         API.registerHighlightIdentifier(MarsBlocks.marsBlock, planetsHighlightHandler);
+    }
+
+    /**
+     * Populates the Tier-2 and Cargo Rocket NEI pages. GTNH deleted both the handler registrations and the map
+     * population in <code>697f953cd</code>, so without this the benches show nothing. The recipes themselves come from
+     * the legacy helpers, so NEI cannot drift from the registry.
+     */
+    private void addLegacyBenchRecipes() {
+        for (final LegacyTier2RocketRecipes.Variant variant : LegacyTier2RocketRecipes.variants()) {
+            this.registerRocketBenchRecipe(
+                    LegacyRocketBenchNei.displayList(variant.input, LegacyRocketBenchNei.BENCH_TIER2_3),
+                    new PositionedStack(
+                            variant.output,
+                            LegacyRocketBenchNei.OUTPUT_TIER2_3[0],
+                            LegacyRocketBenchNei.OUTPUT_TIER2_3[1]));
+        }
+        for (final LegacyCargoRocketRecipes.Variant variant : LegacyCargoRocketRecipes.variants()) {
+            this.registerCargoBenchRecipe(
+                    LegacyRocketBenchNei.displayList(variant.input, LegacyRocketBenchNei.BENCH_CARGO),
+                    new PositionedStack(
+                            variant.output,
+                            LegacyRocketBenchNei.OUTPUT_CARGO[0],
+                            LegacyRocketBenchNei.OUTPUT_CARGO[1]));
+        }
     }
 
     @Override

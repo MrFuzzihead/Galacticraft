@@ -22,7 +22,7 @@ Galacticraft's situation is **better and worse** than Railcraft's:
 recipes / ore-dict entries in `if (!Loader.isModLoaded("dreamcraft"))`. In a pack with **no
 `dreamcraft`**, that content comes back.
 
-**Worse:** six whole recipe families were **deleted outright** — present in *neither* branch — and
+**Worse:** seven whole recipe families were **deleted outright** — present in *neither* branch — and
 they are exactly the progression spine of the mod:
 
 | # | Removed content | Replacement lives in |
@@ -31,6 +31,7 @@ they are exactly the progression spine of the mod:
 | 2 | **Oxygen tanks**: Medium + Heavy (and Light's material reworked) | *nothing known* — `3cfded1b6` simply dropped them |
 | 3 | **Tier-1 rocket** NASA-bench recipes (basic + 7 cargo variants) | GTNH coremod (per #89) |
 | 4 | **Tier-2 rocket** + **Cargo Rocket** NASA-bench recipes | GTNH coremod (per #89) |
+| 4b | **Tier-3 rocket** bench recipes (basic + 7 cargo variants) | GTNH coremod (per #89) |
 | 5 | **Moon Buggy** bench recipes (basic + 7 cargo variants) | GTNH coremod (per #89) — *and the bench GUI was redesigned* |
 | 6 | **Astro Miner** NASA-bench recipe | GTNH coremod (per #89) — *and the bench GUI was redesigned* |
 
@@ -60,11 +61,18 @@ Because of the reformat, the audit used a **recipe-call extractor** rather than 
    `addRocketBenchT2Recipe`, `adCargoRocketRecipe`, `addAstroMinerRecipe`, `CompressorRecipes.*`,
    `CircuitFabricatorRecipes.*`, `FurnaceRecipes.*`, …) with balanced-paren capture, strip comments,
    collapse whitespace.
-2. Set-diff baseline vs HEAD. That yields **exactly 20 distinct** removed recipe calls (plus two
-   `DataWatcher.addObject` false positives, which are excluded below). Because this is a *set*, it
-   collapses identical duplicate calls — so the per-family **call counts** in §3 were recounted
-   separately with `grep -c`. Verified totals: NASA Workbench 1, oxygen tanks 3, T1 rocket **8**,
-   Moon Buggy **8**, T2 rocket **8**, Cargo Rocket **7**, Astro Miner 1.
+2. Set-diff baseline vs HEAD. That yields **exactly 24 distinct** removed recipe calls (plus a
+   number of `DataWatcher.addObject` false positives, which are excluded). Because this is a *set*,
+   it collapses identical duplicate calls — so the per-family **call counts** in §3 were recounted
+   separately with `grep -c`. Verified totals, **44 calls**: NASA Workbench 1, oxygen tanks 3,
+   T1 rocket **8**, Moon Buggy **8**, T2 rocket **8**, Cargo Rocket **7**, T3 rocket **8**,
+   Astro Miner 1.
+
+   All six `GalacticraftRegistry.add*Recipe` entry points (`addT1RocketRecipe`, `addT2RocketRecipe`,
+   `addT3RocketRecipe`, `addCargoRocketRecipe`, `addMoonBuggyRecipe`, `addAstroMinerRecipe`) are
+   covered by the extractor. An earlier pass missed `addT3RocketRecipe`, which is why the Tier-3
+   rocket is listed below &mdash; the recipe lived in `AsteroidsModule`, not in
+   `RecipeManagerAsteroids`.
 3. Confirm each hit with `git log -S<distinctive token> -- <file>` to get the commit and PR.
 4. Separately diff the NEI `IConfigureNEI` classes (handler registrations are not recipe calls).
 5. Separately diff the `Container*`/`Slot*` bench classes, comparing slot counts.
@@ -192,7 +200,23 @@ recipe families in §3 were already commented out in 2020 and hard-deleted in 20
 - **Effect:** the buggy is uncraftable **and** the GUI no longer has the slots a vanilla recipe would
   need. Restoring recipes alone is not enough — the container/gui/slot triple must be restored too.
 
-### 3.6 CRITICAL — Astro Miner recipe deleted *and the bench redesigned*
+### 3.6 CRITICAL — Tier-3 rocket bench recipes deleted
+
+- **Commits:** `459cfc415` (commented out), `697f953cd` (#89, deleted)
+- **File:** `planets/asteroids/AsteroidsModule.java` — 73 lines removed from the planet
+  registration method, immediately above the Astro Miner block
+- **Removed:** all **8** `GalacticraftRegistry.addT3RocketRecipe` calls
+  (`AsteroidsItems.tier3Rocket` metas 0&ndash;3).
+- **Upstream layout (verified):** slot 1 `heavyNoseCone`; 2&ndash;11 `AsteroidsItems.basicItem`
+  meta 0 (heavy plating T3); 12 booster; 13,14 T3 fins (meta 2); 15 T3 engine (meta 1);
+  16 booster; 17,18 T3 fins; 19&ndash;21 cargo chests.
+- **Effect:** the Asteroids are only reachable with a Tier-3 rocket, so this gates an entire
+  dimension. Unlike the Moon Buggy and Astro Miner, **no GUI change is needed** here: the
+  `ContainerSchematicTier3Rocket` layout is still the vanilla one and
+  `SlotSchematicTier3Rocket` still whitelists exactly these parts &mdash; only
+  `RocketT3RecipeHandler` registration and the NEI map were lost on top.
+
+### 3.7 CRITICAL — Astro Miner recipe deleted *and the bench redesigned*
 
 - **Commits:** `459cfc415` (commented out), `697f953cd` (#89, deleted)
 - **Files:** `planets/asteroids/AsteroidsModule.java` (the 73-line
@@ -208,19 +232,25 @@ recipe families in §3 were already commented out in 2020 and hard-deleted in 20
   `dreamcraft` guard at all** (unlike `SlotBuggyBench`).
 - **Effect:** Astro Miner uncraftable, and the schematic GUI has 9 slots that accept nothing.
 
-### 3.7 Cargo Rocket bench layout changed
+### 3.8 Cargo Rocket bench — layout moved, recipe must follow the *current* layout
 
-- **Commit:** `df346caa0`
-- **File:** `planets/mars/inventory/ContainerSchematicCargoRocket.java` (+ `Slot…`, `Inventory…`,
-  `GuiSchematicCargoRocket`)
-- **Change:** backing inventory `new ItemStack[17]` → `new ItemStack[22]`; container
-  `addSlotToContainer` call sites 13 → 11. Whitelists were rewritten for the GT ingredients that
-  `697f953cd` then deleted.
-- **Effect:** even with §3.4's recipes restored, the bench must be re-checked slot-by-slot — the
-  vanilla recipe (6 heavy plates in slots 8–13, engine 16, fins 17–20, chest 21) no longer matches
-  the container's slot indices.
+- **Commits:** `df346caa0` (layout), `d18e22fa5` (chest recipes reintegrated), `697f953cd` (recipes
+  deleted)
+- **Files:** `planets/mars/inventory/ContainerSchematicCargoRocket.java`, `SlotSchematicCargoRocket`,
+  `InventorySchematicCargoRocket` (17 → 22), `GuiSchematicCargoRocket`
+- **What changed:** the **2017** baseline container used slots 1–16 (nose cone 1, body 3–8, fins
+  9/10/12/13, engine 11, add-ons 14–16). GTNH moved it to the modern layout: slot 1 advanced wafer,
+  2/3–5/6 GalaxySpace gear, 7 nose cone, 8–15 reinforced plates, 16 engine, 17–20 fins, 21 chest.
+  That modern layout is **still in HEAD** and `SlotSchematicCargoRocket.isItemValid` still whitelists
+  exactly those parts.
+- **Consequence:** do **not** restore the 2017 recipe against this container — it will not match.
+  Restore the recipe as it existed at `697f953cd^`, which is written for the current layout:
+  `1` = advanced wafer, `7` = nose cone, `8–15` = **eight** reinforced plates T2, `16` = engine
+  (meta 0), `17–20` = fins, `21` = chest; chest meta 3 → `spaceship:11`, 0 → `:12`, 1 → `:13`.
+- **Effect:** unlike the buggy and astro miner benches, **the cargo rocket bench GUI needs no
+  dual-layout work** — only the three recipes have to come back.
 
-### 3.8 NEI: seven recipe/usage handlers unregistered
+### 3.9 NEI: seven recipe/usage handlers unregistered
 
 GTNH removed NEI integration for content it believed the coremod/`GalaxySpace` would supply. These
 are **not** gated — they are commented out or deleted for everyone:
@@ -247,7 +277,7 @@ that is now never populated, so it shows nothing.
 - **Effect:** ~all GC machine/bench recipes are invisible in NEI. Exactly the symptom
   `FuzziTweaks/.../mixins/late/galacticraft/NEIGalacticraftConfigMixin.java` works around today.
 
-### 3.9 Mod-integration features dropped
+### 3.10 Mod-integration features dropped
 
 | Feature | Removed in | Notes |
 |---|---|---|
@@ -258,13 +288,13 @@ that is now never populated, so it shows nothing.
 | **Update/version checker** (`util/ThreadVersionCheck`, `ThreadRequirementMissing`) | `39f131b90` (2020-05-06) | intentional, harmless |
 | **`/gchelp` command** (`command/CommandGCHelp`) | `e3026156e` (2025-08-30, "Remove old wiki references") | harmless |
 
-These are lower priority than §3.1–3.8 but they *are* ungated feature removals and belong in the
+These are lower priority than §3.1–3.9 but they *are* ungated feature removals and belong in the
 list. BuildCraft/IC2 energy is only partially affected — `receiveEnergy`/`extractEnergy` (RF) and
 the IC2 `acceptsEnergyFrom`/`emitsEnergyTo` signatures survive, and
 `ElectricItemManagerIC2_1710` is still present (`7872f1ca7` was an FML-soft-dependency refactor, not
 a feature removal).
 
-### 3.10 False positives (checked, *not* removed)
+### 3.11 False positives (checked, *not* removed)
 
 - Asteroid `slime_ball` recipe (`RecipeManagerAsteroids`) — still present, only reformatted.
 - `EntityBuggy` / `EntityFlag` / `EntitySlimeling` `DataWatcher.addObject` — extractor noise.
@@ -482,11 +512,13 @@ otherwise.
 - [ ] Restore `RocketT1RecipeHandler` + its map under the gate (§5.5)
 - [ ] Verify: NASA Workbench craftable → T1 rocket assembles in bench → Moon reachable, in NEI too
 
-### Pass 2 — planets
+### Pass 2 — planets (no GUI work needed)
 
-- [ ] `LegacyTier2RocketRecipes` + `LegacyCargoRocketRecipes`
-- [ ] Re-check `ContainerSchematicCargoRocket` slot indices against the vanilla recipe
-      (inventory 17 → 22 drift)
+- [ ] `LegacyTier2RocketRecipes` — 8 variants, slots 1–18, cargo 19–21 pinned. The container and
+      `SlotSchematicTier2Rocket` are unchanged from upstream.
+- [ ] `LegacyCargoRocketRecipes` — 3 variants written for the **current** layout (§3.8), outputs
+      11/12/13.
+- [ ] `LegacyTier3RocketRecipes` — 8 variants (§3.6); container unchanged.
 - [ ] Restore Mars `RocketT2RecipeHandler` + `CargoRocketRecipeHandler` maps + `registerRecipes()`
 - [ ] Restore Asteroids `RocketT3RecipeHandler` + map + `registerRecipes()`
 
@@ -575,6 +607,6 @@ git show 79be38a2b:src/main/java/micdoodle8/mods/galacticraft/planets/asteroids/
 ### Relationship to `MrFuzzihead/FuzziTweaks`
 
 `common/GalacticraftRecipes.java` + the three `mixins/late/galacticraft/*` classes already restore
-§3.1, §3.3, §3.4 (partially), §3.2 (as a full re-ladder) and §3.8. They are a correct proof of
+§3.1, §3.3, §3.4 (partially), §3.2 (as a full re-ladder) and §3.9, plus Tier-3 in §3.6. They are a correct proof of
 concept and a usable spec — but they cannot reach §3.5/§3.6, because those need container/GUI/slot
 changes that a mixin cannot reasonably carry. That is the argument for moving this into the fork.

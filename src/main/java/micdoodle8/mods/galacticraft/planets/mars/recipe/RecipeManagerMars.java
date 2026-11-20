@@ -11,11 +11,14 @@ import cpw.mods.fml.common.Loader;
 import micdoodle8.mods.galacticraft.core.Constants;
 import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars;
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks;
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyCargoRocketRecipes;
+import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyTier2RocketRecipes;
 
 public class RecipeManagerMars {
 
@@ -220,6 +223,12 @@ public class RecipeManagerMars {
                     new ItemStack(GCItems.basicItem, 1, 4),
                     1.0F);
             OreDictionary.registerOre("ingotDesh", new ItemStack(MarsItems.marsItemBasic, 1, 2));
+        }
+
+        if (CompatGates.useLegacyContent()) {
+            // The GTNH coremod supplies these; upstream Galacticraft did it itself.
+            LegacyTier2RocketRecipes.register();
+            LegacyCargoRocketRecipes.register();
         }
     }
 }

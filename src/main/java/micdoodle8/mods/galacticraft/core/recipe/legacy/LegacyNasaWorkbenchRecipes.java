@@ -4,6 +4,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 
 import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 
 /**
@@ -19,6 +20,9 @@ public final class LegacyNasaWorkbenchRecipes {
     private LegacyNasaWorkbenchRecipes() {}
 
     public static void register() {
+        if (!CompatGates.useLegacyContent()) {
+            return;
+        }
         // X = compressedSteel Z = crafting table
         // U = lever W = advanced wafer
         // Y = compressedSteel V = redstone torch

@@ -8,6 +8,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 
 /**
@@ -22,7 +23,7 @@ import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
  * <p>
  * The slot layout is the one {@code ContainerSchematicTier1Rocket} builds: 1 nose cone, 2&ndash;9 heavy plating, 10/11
  * fins, 12 engine, 13/14 fins, 15&ndash;17 cargo add-ons. Cargo capacity is the output damage value (0 = none, 1 = 18
- * slots, 2 = 36, 3 = 54).
+ * slots, 2 = 36, 3 = 54); see {@link LegacyCargoLayout}.
  *
  * <p>
  * The add-on slots are always present in the input map &mdash; {@code null} meaning "must be empty" &mdash; because
@@ -34,21 +35,15 @@ public final class LegacyTier1RocketRecipes {
     /** Cargo add-on slot indices shared with {@code ContainerSchematicTier1Rocket}. */
     public static final int[] CARGO_SLOTS = { 15, 16, 17 };
 
-    /**
-     * Cargo layout of each variant as a bitmask over {@link #CARGO_SLOTS}: bit 0 = slot 15, bit 1 = slot 16, bit 2 =
-     * slot 17. Plain data so it can be asserted in a unit test.
-     */
-    public static final int[] CARGO_MASKS = { 0x0, 0x1, 0x2, 0x4, 0x3, 0x5, 0x6, 0x7 };
-
-    /** {@code rocketTier1} damage value (cargo tier) of each variant, matching {@link #CARGO_MASKS}. */
-    public static final int[] OUTPUT_METAS = { 0, 1, 1, 1, 2, 2, 2, 3 };
-
-    /** Number of slots in the Tier-1 bench input map (1-17 inclusive). */
+    /** Number of input slots in the Tier-1 bench map (1-17 inclusive). */
     public static final int SLOT_COUNT = 17;
 
     private LegacyTier1RocketRecipes() {}
 
     public static void register() {
+        if (!CompatGates.useLegacyContent()) {
+            return;
+        }
         for (final Variant variant : variants()) {
             RecipeUtil.addRocketBenchRecipe(variant.output, variant.input);
         }
@@ -62,21 +57,18 @@ public final class LegacyTier1RocketRecipes {
      */
     public static List<Variant> variants() {
         final ItemStack chest = new ItemStack(Blocks.chest);
-        final List<Variant> variants = new ArrayList<>(CARGO_MASKS.length);
+        final List<Variant> variants = new ArrayList<>(LegacyCargoLayout.COUNT);
 
-        for (int i = 0; i < CARGO_MASKS.length; i++) {
+        for (int i = 0; i < LegacyCargoLayout.COUNT; i++) {
+            final int mask = LegacyCargoLayout.MASKS[i];
             variants.add(
                     variant(
-                            OUTPUT_METAS[i],
-                            chestAt(CARGO_MASKS[i], 0, chest),
-                            chestAt(CARGO_MASKS[i], 1, chest),
-                            chestAt(CARGO_MASKS[i], 2, chest)));
+                            LegacyCargoLayout.OUTPUT_METAS[i],
+                            LegacyCargoLayout.hasChest(mask, 0) ? chest : null,
+                            LegacyCargoLayout.hasChest(mask, 1) ? chest : null,
+                            LegacyCargoLayout.hasChest(mask, 2) ? chest : null));
         }
         return variants;
-    }
-
-    private static ItemStack chestAt(int mask, int bit, ItemStack chest) {
-        return (mask & 1 << bit) != 0 ? chest : null;
     }
 
     /**

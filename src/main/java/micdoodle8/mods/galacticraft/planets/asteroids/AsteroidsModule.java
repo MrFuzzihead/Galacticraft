@@ -43,6 +43,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.command.CommandGCAstroMiner;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.planets.GuiIdsPlanets;
 import micdoodle8.mods.galacticraft.planets.IPlanetsModule;
@@ -62,6 +63,7 @@ import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
 import micdoodle8.mods.galacticraft.planets.asteroids.network.PacketSimpleAsteroids;
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.CanisterRecipes;
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.RecipeManagerAsteroids;
+import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyTier3RocketRecipes;
 import micdoodle8.mods.galacticraft.planets.asteroids.schematic.SchematicAstroMiner;
 import micdoodle8.mods.galacticraft.planets.asteroids.schematic.SchematicTier3Rocket;
 import micdoodle8.mods.galacticraft.planets.asteroids.tick.AsteroidsTickHandlerServer;
@@ -189,6 +191,11 @@ public class AsteroidsModule implements IPlanetsModule {
         this.registerEntities();
 
         RecipeManagerAsteroids.loadRecipes();
+
+        if (CompatGates.useLegacyContent()) {
+            // The GTNH coremod supplies these; upstream Galacticraft did it itself.
+            LegacyTier3RocketRecipes.register();
+        }
 
         AsteroidsModule.planetAsteroids = new Planet("asteroids").setParentSolarSystem(GalacticraftCore.solarSystemSol);
         AsteroidsModule.planetAsteroids

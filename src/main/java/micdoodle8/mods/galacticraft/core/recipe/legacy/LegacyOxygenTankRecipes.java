@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 
 /**
@@ -35,6 +36,9 @@ public final class LegacyOxygenTankRecipes {
     private LegacyOxygenTankRecipes() {}
 
     public static void register() {
+        if (!CompatGates.useLegacyContent()) {
+            return;
+        }
         addTank(GCItems.oxTankLight, new Object[] { "Z", "X", "Y" }, "compressedCopper", Blocks.wool, 5);
         addTank(GCItems.oxTankMedium, new Object[] { "ZZ", "XX", "YY" }, "compressedTin", Blocks.wool, 1);
         addTank(GCItems.oxTankHeavy, new Object[] { "ZZZ", "XXX", "YYY" }, "compressedSteel", Blocks.wool, 14);

@@ -13,10 +13,13 @@ import codechicken.nei.api.IConfigureNEI;
 import micdoodle8.mods.galacticraft.core.Constants;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
+import micdoodle8.mods.galacticraft.core.nei.LegacyRocketBenchNei;
 import micdoodle8.mods.galacticraft.core.nei.NasaWorkbenchOverlayHandler;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks;
 import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicAstroMiner;
 import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicTier3Rocket;
+import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyTier3RocketRecipes;
 import micdoodle8.mods.galacticraft.planets.mars.nei.NEIGalacticraftMarsConfig;
 
 public class NEIGalacticraftAsteroidsConfig implements IConfigureNEI {
@@ -31,6 +34,9 @@ public class NEIGalacticraftAsteroidsConfig implements IConfigureNEI {
             API.registerRecipeHandler(rocketHandler);
             API.registerUsageHandler(new RocketT3RecipeHandler());
             API.addRecipeCatalyst(new ItemStack(GCBlocks.nasaWorkbench), rocketHandler);
+        }
+        if (CompatGates.useLegacyContent()) {
+            this.addLegacyRocketBenchRecipes();
         }
         AstroMinerRecipeHandler astroMinerHandler = new AstroMinerRecipeHandler();
         API.registerRecipeHandler(astroMinerHandler);
@@ -47,6 +53,21 @@ public class NEIGalacticraftAsteroidsConfig implements IConfigureNEI {
                 new NasaWorkbenchOverlayHandler(4, 16),
                 "galacticraft.astroMiner");
         API.registerHighlightIdentifier(AsteroidBlocks.blockBasic, NEIGalacticraftMarsConfig.planetsHighlightHandler);
+    }
+
+    /**
+     * Populates the Tier-3 rocket NEI page. GTNH deleted both the handler registration and the map population in
+     * <code>697f953cd</code>; the recipes come from the legacy helper so NEI cannot drift from the registry.
+     */
+    private void addLegacyRocketBenchRecipes() {
+        for (final LegacyTier3RocketRecipes.Variant variant : LegacyTier3RocketRecipes.variants()) {
+            this.registerRocketBenchRecipe(
+                    LegacyRocketBenchNei.displayList(variant.input, LegacyRocketBenchNei.BENCH_TIER2_3),
+                    new PositionedStack(
+                            variant.output,
+                            LegacyRocketBenchNei.OUTPUT_TIER2_3[0],
+                            LegacyRocketBenchNei.OUTPUT_TIER2_3[1]));
+        }
     }
 
     @Override
