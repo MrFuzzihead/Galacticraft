@@ -45,6 +45,14 @@ Set `Content Mode` in `config/Galacticraft/core.conf` to test both paths without
 
 ## 5. Benches
 
+For both redesigned benches, the container/slot/GUI code was **moved**, not rewritten, on the GTNH
+side - so a bug here is almost certainly in the legacy branch or in a wrong `CompatGates` decision.
+
+- [ ] Shift-click a part from the player inventory into the bench: it should land in a matching
+      craft slot, not bounce back or land in the output. (The transfer range is computed as
+      `inventorySlots.size() - 36`, which resolves differently per layout.)
+- [ ] Shift-click the output: the finished machine should transfer to the player inventory.
+
 - [x] **Moon Buggy** — bench shows the original 19-slot layout (4x3 body with the seat in the
       middle, 2x2 wheels, 3 cargo add-ons), every slot accepts its part, and all 8 variants craft
       (0–3 storage modules → `buggy:0-3`). NEI shows the same page over the legacy texture.
@@ -54,13 +62,23 @@ Set `Content Mode` in `config/Galacticraft/core.conf` to test both paths without
 - [ ] Cargo Rocket bench slots line up with the recipe (advanced wafer 1, nose cone 7, eight plates
       8–15, engine 16, fins 17–20, chest 21)
 
-## 6. NEI completeness
+## 6. NEI completeness and **alignment** (highest-risk item)
 
 - [ ] Ingot Compressor and Electric Ingot Compressor have recipe pages
 - [ ] Gas Liquefier and Methane Synthesizer have recipe pages
 - [ ] Refinery, Circuit Fabricator, Buggy and rocket pages render without a missing-texture crash
+- [ ] **Every item icon on the Buggy and Astro Miner pages sits on its slot outline.** These pages
+      use hand-written coordinate tables that no test can validate - a constant offset of a few
+      pixels is the most likely bug in this branch. Compare against the slot the recipe fills.
+- [ ] On the rocket pages, the same check for slots 1-21 (these tables predate the buggy one but
+      were verified against the container source, not in-game)
 
 ## 7. Regression checks (the GTNH path must be untouched)
+
+Also worth one dedicated run: **GregTech installed, `dreamcraft` absent.** Before this branch,
+`SlotBuggyBench` gated its GregTech item lookups on `dreamcraft`, leaving 12 slots that accepted
+nothing; they now key off "is GregTech present". Expect the GT slots to accept `gt.metaitem.01`
+items and no `NoClassDefFoundError` in the log.
 
 Switch Content Mode to `1` (or install the GTNH pack) and confirm:
 
