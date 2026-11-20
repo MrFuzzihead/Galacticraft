@@ -147,8 +147,11 @@ recipe families in §3 were already commented out in 2020 and hard-deleted in 20
   `"YZY","YXY","YYY"` with `Y = compressedAluminum`, `Z = oxygenPipe`, canister meta 0 and meta 1.
 - **Effect:** a clean 3-tier ladder became a single tier. Medium and Heavy are **uncraftable**, so
   the player is stuck with the light tank's small capacity — a hard gate on longer trips.
-- **Note:** `oxTankSuperHeavy` / `oxTankUltraHeavy` are GTNH-only additions; there is no upstream
-  recipe to restore for them.
+- **Note:** `oxTankSuperHeavy` (tier 4) and `oxTankUltraHeavy` (tier 5) are GTNH-added items with **no
+  upstream recipe** — there is nothing to restore. GTNH never shipped recipes for them in this fork
+  either, so outside the GTNH pack both are uncraftable. The fork offers FuzziTweaks' recipes for them
+  as an explicit **opt-in extra** (`Add GTNH oxygen tank tiers`, default off; see
+  `core/recipe/optional/OptionalOxygenTankRecipes`), not as part of the restoration.
 
 ### 3.3 CRITICAL — Tier-1 rocket bench recipes deleted
 

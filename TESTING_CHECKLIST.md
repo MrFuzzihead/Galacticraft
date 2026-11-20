@@ -30,6 +30,10 @@ Set `Content Mode` in `config/Galacticraft/core.conf` to test both paths without
 - [ ] Heavy = 7× compressed steel + tin canister + red wool
 - [ ] All three output **empty** tanks and refill in the Oxygen Compressor
 - [ ] In `-1` mode with `dreamcraft` present, only the GTNH compressed-aluminium Light recipe exists
+- [ ] **Opt-in tiers**: with `Add GTNH oxygen tank tiers` = false (default), Super Heavy and Ultra
+      Heavy have **no** recipe. Set it to true, restart, and both craft from 7 compressed
+      meteoric-iron / desh plus a canister and an oxygen pipe (both tin and copper canisters)
+- [ ] The flag has no effect in GTNH content mode (the coremod owns those recipes)
 
 ## 3. Mars
 

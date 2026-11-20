@@ -138,6 +138,13 @@ public class ConfigManagerCore {
      */
     public static int gtnhCompatMode = CompatGates.MODE_AUTO;
 
+    /**
+     * Opt-in: add crafting recipes for the Super Heavy (tier 4) and Ultra Heavy (tier 5) oxygen tanks GTNH added. Off
+     * by default so the default content matches original Galacticraft, which only had three tiers. Only takes effect
+     * outside the GTNH pack (see {@link CompatGates#useLegacyContent()}).
+     */
+    public static boolean addGtnhOxygenTankTiers = false;
+
     public static ArrayList<Object> clientSave = null;
 
     public static void initialize(File file) {
@@ -181,6 +188,18 @@ public class ConfigManagerCore {
                             + "  1 = force the GTNH content (requires the GTNH coremod)");
             prop.setLanguageKey("gc.configgui.gtnhCompatMode");
             gtnhCompatMode = prop.getInt(CompatGates.MODE_AUTO);
+            propOrder.add(prop.getName());
+
+            prop = config.get(
+                    Constants.CONFIG_CATEGORY_GENERAL,
+                    "Add GTNH oxygen tank tiers",
+                    false,
+                    "Add crafting recipes for the Super Heavy (tier 4) and Ultra Heavy (tier 5) oxygen tanks. "
+                            + "These tiers were added by GTNH and never had recipes in this fork, so outside "
+                            + "the GTNH pack both are uncraftable. Off by default so the default content "
+                            + "matches original Galacticraft (three tiers). Ignored when GTNH content mode is active.");
+            prop.setLanguageKey("gc.configgui.addGtnhOxygenTankTiers");
+            addGtnhOxygenTankTiers = prop.getBoolean(false);
             propOrder.add(prop.getName());
 
             prop = config.get(Constants.CONFIG_CATEGORY_DIMENSIONS, "idDimensionOverworld", 0);
