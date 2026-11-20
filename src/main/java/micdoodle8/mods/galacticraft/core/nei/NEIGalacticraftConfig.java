@@ -99,6 +99,14 @@ public class NEIGalacticraftConfig implements IConfigureNEI {
          * IngotCompressorRecipeHandler()); API.registerRecipeHandler(new ElectricIngotCompressorRecipeHandler());
          * API.registerUsageHandler(new ElectricIngotCompressorRecipeHandler());
          */
+        if (CompatGates.useLegacyContent()) {
+            // The compressor recipe maps are filled by registerRecipes() above; only the handler
+            // registrations were dropped, so outside GTNH the machines had no NEI pages at all.
+            API.registerRecipeHandler(new IngotCompressorRecipeHandler());
+            API.registerUsageHandler(new IngotCompressorRecipeHandler());
+            API.registerRecipeHandler(new ElectricIngotCompressorRecipeHandler());
+            API.registerUsageHandler(new ElectricIngotCompressorRecipeHandler());
+        }
 
         API.registerHighlightIdentifier(GCBlocks.basicBlock, new GCNEIHighlightHandler());
         API.registerHighlightIdentifier(GCBlocks.blockMoon, new GCNEIHighlightHandler());
