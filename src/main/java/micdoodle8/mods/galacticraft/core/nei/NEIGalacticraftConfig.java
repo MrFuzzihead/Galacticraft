@@ -25,6 +25,7 @@ import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicBuggy;
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicTier1Rocket;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems;
@@ -68,6 +69,11 @@ public class NEIGalacticraftConfig implements IConfigureNEI {
             API.registerRecipeHandler(rocketHandler);
             API.registerUsageHandler(new RocketT1RecipeHandler());
             API.addRecipeCatalyst(new ItemStack(GCBlocks.nasaWorkbench), rocketHandler);
+        }
+        if (CompatGates.useLegacyContent()) {
+            // The handler above renders from NEIGalacticraftConfig#rocketBenchRecipes, which is never
+            // populated. Fill it from the restored recipes.
+            LegacyRocketBenchNei.populate(this);
         }
         BuggyRecipeHandler buggyHandler = new BuggyRecipeHandler();
         API.registerRecipeHandler(buggyHandler);

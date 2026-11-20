@@ -132,6 +132,12 @@ public class ConfigManagerCore {
     // Kept to ensure backwards-compatibility with certain Galacticraft addons
     public static int keyOverrideFuelLevelI = 0;
 
+    /**
+     * Which content path to run. See {@link CompatGates}: -1 = auto (GTNH content iff the GTNH pack mod is loaded), 0 =
+     * force the original Galacticraft content, 1 = force the GTNH content.
+     */
+    public static int gtnhCompatMode = CompatGates.MODE_AUTO;
+
     public static ArrayList<Object> clientSave = null;
 
     public static void initialize(File file) {
@@ -163,6 +169,18 @@ public class ConfigManagerCore {
             prop.comment = "If this is enabled, debug messages will appear in the console. This is useful for finding bugs in the mod.";
             prop.setLanguageKey("gc.configgui.enableDebug");
             enableDebug = prop.getBoolean(false);
+            propOrder.add(prop.getName());
+
+            prop = config.get(
+                    Constants.CONFIG_CATEGORY_GENERAL,
+                    "GTNH compatibility mode",
+                    CompatGates.MODE_AUTO,
+                    "Which content path Galacticraft uses.\n"
+                            + " -1 = auto: original Galacticraft content unless the GTNH coremod (dreamcraft) is loaded\n"
+                            + "  0 = force the original Galacticraft recipes and benches\n"
+                            + "  1 = force the GTNH content (requires the GTNH coremod)");
+            prop.setLanguageKey("gc.configgui.gtnhCompatMode");
+            gtnhCompatMode = prop.getInt(CompatGates.MODE_AUTO);
             propOrder.add(prop.getName());
 
             prop = config.get(Constants.CONFIG_CATEGORY_DIMENSIONS, "idDimensionOverworld", 0);

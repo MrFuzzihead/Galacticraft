@@ -26,6 +26,10 @@ import micdoodle8.mods.galacticraft.core.entities.EntityBuggy;
 import micdoodle8.mods.galacticraft.core.entities.EntityTier1Rocket;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
 import micdoodle8.mods.galacticraft.core.items.ItemBasic;
+import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyNasaWorkbenchRecipes;
+import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyOxygenTankRecipes;
+import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyTier1RocketRecipes;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.core.util.GCLog;
@@ -617,15 +621,22 @@ public class RecipeManagerGC {
                     new Object[] { "XYX", "YZY", "XYX", 'X', deshIngot, 'Y', Items.glowstone_dust, 'Z',
                             new ItemStack(GCItems.battery, 1, 0) });
         }
-        RecipeUtil.addRecipe(
-                new ItemStack(GCItems.oxTankLight, 1, GCItems.oxTankLight.getMaxDamage()),
-                new Object[] { "YZY", "YXY", "YYY", 'X', new ItemStack(GCItems.canister, 1, 0), 'Y',
-                        "compressedAluminum", 'Z', GCBlocks.oxygenPipe });
+        if (CompatGates.useLegacyContent()) {
+            // The GTNH coremod supplies these; upstream Galacticraft did it itself.
+            LegacyNasaWorkbenchRecipes.register();
+            LegacyOxygenTankRecipes.register();
+            LegacyTier1RocketRecipes.register();
+        } else {
+            RecipeUtil.addRecipe(
+                    new ItemStack(GCItems.oxTankLight, 1, GCItems.oxTankLight.getMaxDamage()),
+                    new Object[] { "YZY", "YXY", "YYY", 'X', new ItemStack(GCItems.canister, 1, 0), 'Y',
+                            "compressedAluminum", 'Z', GCBlocks.oxygenPipe });
 
-        RecipeUtil.addRecipe(
-                new ItemStack(GCItems.oxTankLight, 1, GCItems.oxTankLight.getMaxDamage()),
-                new Object[] { "YZY", "YXY", "YYY", 'X', new ItemStack(GCItems.canister, 1, 1), 'Y',
-                        "compressedAluminum", 'Z', GCBlocks.oxygenPipe });
+            RecipeUtil.addRecipe(
+                    new ItemStack(GCItems.oxTankLight, 1, GCItems.oxTankLight.getMaxDamage()),
+                    new Object[] { "YZY", "YXY", "YYY", 'X', new ItemStack(GCItems.canister, 1, 1), 'Y',
+                            "compressedAluminum", 'Z', GCBlocks.oxygenPipe });
+        }
         RecipeUtil.addRecipe(
                 new ItemStack(GCItems.flag),
                 new Object[] { "XYY", "XYY", "X  ", 'X', GCItems.flagPole, 'Y', GCItems.canvas });

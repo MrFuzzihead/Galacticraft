@@ -11,6 +11,8 @@ public class Constants {
 
     public static final String MOD_ID_GALAXYSPACE = "GalaxySpace";
     public static final String MOD_ID_GREGTECH = "gregtech";
+    // The GTNH fork of GT5-Unofficial uses this id instead of "gregtech".
+    public static final String MOD_ID_GREGTECH_NH = "gregtech_nh";
     public static final String MOD_ID_NEW_HORIZONS_CORE_MOD = "dreamcraft";
 
     public static final String VERSION = Tags.VERSION;

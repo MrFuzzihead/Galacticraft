@@ -735,6 +735,7 @@ gc.configgui.enableThaumCraftNodes=Enable ThaumCraft Nodes on Planets
 gc.configgui.otherModOreGenIDs=Custom Ores to Generate on Planets
 gc.configgui.enableCapes=Enable/Disable Fetching Donator Capes
 gc.configgui.enableDebug=Show Debug Messages in Console
+gc.configgui.gtnhCompatMode=Content Mode (-1 auto / 0 original / 1 GTNH)
 gc.configgui.disableLander=Disable Moon Lander
 gc.configgui.disableSpaceshipGrief=Disable Rocket Explosions
 gc.configgui.spaceStationsRequirePermission=Space Stations Permissions
