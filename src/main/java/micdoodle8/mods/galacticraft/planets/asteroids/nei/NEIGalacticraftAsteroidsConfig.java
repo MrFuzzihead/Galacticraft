@@ -19,6 +19,7 @@ import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks;
 import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicAstroMiner;
 import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicTier3Rocket;
+import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyTier3RocketRecipes;
 import micdoodle8.mods.galacticraft.planets.mars.nei.NEIGalacticraftMarsConfig;
 
@@ -37,6 +38,7 @@ public class NEIGalacticraftAsteroidsConfig implements IConfigureNEI {
         }
         if (CompatGates.useLegacyContent()) {
             this.addLegacyRocketBenchRecipes();
+            this.addLegacyAstroMinerRecipe();
         }
         AstroMinerRecipeHandler astroMinerHandler = new AstroMinerRecipeHandler();
         API.registerRecipeHandler(astroMinerHandler);
@@ -59,6 +61,19 @@ public class NEIGalacticraftAsteroidsConfig implements IConfigureNEI {
      * Populates the Tier-3 rocket NEI page. GTNH deleted both the handler registration and the map population in
      * <code>697f953cd</code>; the recipes come from the legacy helper so NEI cannot drift from the registry.
      */
+    /**
+     * Populates the Astro Miner NEI page. GTNH registers {@code AstroMinerRecipeHandler} but never fills the map it
+     * reads, so the page existed and listed nothing.
+     */
+    private void addLegacyAstroMinerRecipe() {
+        this.registerAstroMinerRecipe(
+                LegacyAstroMinerBenchNei.displayList(),
+                new PositionedStack(
+                        new ItemStack(AsteroidsItems.astroMiner, 1, 0),
+                        LegacyAstroMinerBenchNei.OUTPUT[0],
+                        LegacyAstroMinerBenchNei.OUTPUT[1]));
+    }
+
     private void addLegacyRocketBenchRecipes() {
         for (final LegacyTier3RocketRecipes.Variant variant : LegacyTier3RocketRecipes.variants()) {
             this.registerRocketBenchRecipe(

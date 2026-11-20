@@ -2,6 +2,7 @@ package micdoodle8.mods.galacticraft.planets.asteroids.inventory;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
@@ -60,6 +61,50 @@ public class SlotSchematicAstroMiner extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemStack) {
+        if (CompatGates.useLegacyContent()) {
+            return this.isLegacyItemValid(itemStack);
+        }
+        return this.isGregTechItemValid(itemStack);
+    }
+
+    /**
+     * Upstream Galacticraft's whitelist for the original 14-slot benched layout (slots 1-14).
+     */
+    private boolean isLegacyItemValid(ItemStack itemStack) {
+        switch (this.index) {
+            // Tier 1 plating
+            case 1:
+            case 3:
+            case 5:
+            case 11:
+                return itemStack.getItem() == GCItems.heavyPlatingTier1;
+            // Orion drive
+            case 2:
+            case 4:
+            case 9:
+            case 10:
+            case 12:
+                return itemStack.getItem() == AsteroidsItems.orionDrive;
+            // Advanced wafer
+            case 6:
+                return itemStack.getItem() == GCItems.basicItem && itemStack.getItemDamage() == 14;
+            // Storage
+            case 7:
+            case 8:
+                return itemStack.getItem() == Item.getItemFromBlock(Blocks.chest);
+            // Laser beam core
+            case 13:
+                return itemStack.getItem() == AsteroidsItems.basicItem && itemStack.getItemDamage() == 8;
+            // Laser pole
+            case 14:
+                return itemStack.getItem() == GCItems.flagPole;
+            default:
+                return false;
+        }
+    }
+
+    /** The GTNH layout's whitelist (slots 1-29). */
+    private boolean isGregTechItemValid(ItemStack itemStack) {
         if (this.index >= 1 && this.index <= 8) {
             return itemStack.getItem() == MarsItems.marsItemBasic && itemStack.getItemDamage() == 3;
         }

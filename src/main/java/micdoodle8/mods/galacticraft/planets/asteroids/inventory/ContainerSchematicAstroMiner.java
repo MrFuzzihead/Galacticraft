@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import micdoodle8.mods.galacticraft.core.inventory.SlotRocketBenchResult;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.planets.mars.util.RecipeUtilMars;
 
 public class ContainerSchematicAstroMiner extends Container {
@@ -20,6 +21,66 @@ public class ContainerSchematicAstroMiner extends Container {
 
     public ContainerSchematicAstroMiner(InventoryPlayer inventory, int x, int y, int z) {
         this.worldObj = inventory.player.worldObj;
+
+        if (CompatGates.useLegacyContent()) {
+            this.addLegacySlots(inventory, x, y, z);
+        } else {
+            this.addGregTechSlots(inventory, x, y, z);
+        }
+
+        this.onCraftMatrixChanged(this.craftMatrix);
+    }
+
+    /**
+     * Upstream Galacticraft's bench layout: 14 craft slots in the shape of the miner (4 top, 5 middle, 3 bottom, 2
+     * laser), matching {@code LegacyAstroMinerRecipes}. Coordinates taken verbatim from the last upstream commit before
+     * the GTNH fork (79be38a2b).
+     */
+    private void addLegacySlots(InventoryPlayer inventory, int x, int y, int z) {
+        final EntityPlayer player = inventory.player;
+        final int change = 26;
+
+        this.addSlotToContainer(
+                new SlotRocketBenchResult(player, this.craftMatrix, this.craftResult, 0, 142, 72 + change));
+
+        int count = 1;
+
+        // Miner top layer
+        for (int i = 0; i < 4; i++) {
+            this.addSlotToContainer(
+                    new SlotSchematicAstroMiner(this.craftMatrix, count++, 27 + i * 18, 35 + change, x, y, z, player));
+        }
+
+        // Miner mid layer
+        for (int i = 0; i < 5; i++) {
+            this.addSlotToContainer(
+                    new SlotSchematicAstroMiner(this.craftMatrix, count++, 16 + i * 18, 53 + change, x, y, z, player));
+        }
+
+        // Miner bottom layer
+        for (int i = 0; i < 3; i++) {
+            this.addSlotToContainer(
+                    new SlotSchematicAstroMiner(this.craftMatrix, count++, 44 + i * 18, 71 + change, x, y, z, player));
+        }
+
+        // Laser
+        for (int i = 0; i < 2; i++) {
+            this.addSlotToContainer(
+                    new SlotSchematicAstroMiner(this.craftMatrix, count++, 8 + i * 18, 77 + change, x, y, z, player));
+        }
+
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                this.addSlotToContainer(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
+            }
+        }
+        for (int col = 0; col < 9; col++) {
+            this.addSlotToContainer(new Slot(inventory, col, 8 + col * 18, 144 + 54));
+        }
+    }
+
+    /** The GTNH layout (30 craft slots), unchanged. */
+    private void addGregTechSlots(InventoryPlayer inventory, int x, int y, int z) {
 
         // OUT
         this.addSlotToContainer(
@@ -83,7 +144,6 @@ public class ContainerSchematicAstroMiner extends Container {
             }
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix);
     }
 
     @Override

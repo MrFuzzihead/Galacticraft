@@ -8,7 +8,6 @@ import java.util.Set;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -16,6 +15,7 @@ import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.EnumColor;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.planets.asteroids.AsteroidsModule;
@@ -23,13 +23,20 @@ import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicAst
 
 public class AstroMinerRecipeHandler extends TemplateRecipeHandler {
 
-    private static final ResourceLocation rocketGuiTexture = GuiSchematicAstroMiner.schematicTexture;
     public static final int x = -1;
     public static final int y = 0;
     public static final int tX = 3;
     public static final int tY = 16;
     public static final int w = 168;
     public static final int h = 96;
+
+    /** Crop upstream's handler uses for the restored 14-slot bench texture. */
+    private static final int LEGACY_X = 0;
+    private static final int LEGACY_Y = -8;
+    private static final int LEGACY_TX = 3;
+    private static final int LEGACY_TY = 32;
+    private static final int LEGACY_W = 168;
+    private static final int LEGACY_H = 104;
 
     public String getRecipeId() {
         return "galacticraft.astroMiner";
@@ -57,12 +64,20 @@ public class AstroMinerRecipeHandler extends TemplateRecipeHandler {
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiDraw.changeTexture(AstroMinerRecipeHandler.rocketGuiTexture);
-        GuiDraw.drawTexturedModalRect(x, y, tX, tY, w, h);
+        GuiDraw.changeTexture(GuiSchematicAstroMiner.activeTexture());
+        if (CompatGates.useLegacyContent()) {
+            GuiDraw.drawTexturedModalRect(LEGACY_X, LEGACY_Y, LEGACY_TX, LEGACY_TY, LEGACY_W, LEGACY_H);
+        } else {
+            GuiDraw.drawTexturedModalRect(x, y, tX, tY, w, h);
+        }
     }
 
     @Override
     public void loadTransferRects() {
+        if (CompatGates.useLegacyContent()) {
+            // Upstream's bench has no drag-transfer target.
+            return;
+        }
         this.transferRects.add(new RecipeTransferRect(new Rectangle(282, 36, 38, 69), this.getRecipeId()));
     }
 
@@ -130,7 +145,9 @@ public class AstroMinerRecipeHandler extends TemplateRecipeHandler {
 
     @Override
     public String getGuiTexture() {
-        return AsteroidsModule.TEXTURE_PREFIX + "textures/gui/schematic_rocket_GS1_Miner.png";
+        return CompatGates.useLegacyContent()
+                ? AsteroidsModule.TEXTURE_PREFIX + "textures/gui/schematic_astro_miner_legacy.png"
+                : AsteroidsModule.TEXTURE_PREFIX + "textures/gui/schematic_rocket_GS1_Miner.png";
     }
 
     @Override

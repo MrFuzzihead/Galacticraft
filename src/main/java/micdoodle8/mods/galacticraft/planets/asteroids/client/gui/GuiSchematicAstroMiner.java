@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicResultPage;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.EnumColor;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.planets.asteroids.AsteroidsModule;
@@ -20,11 +21,23 @@ public class GuiSchematicAstroMiner extends GuiContainer implements ISchematicRe
             AsteroidsModule.ASSET_PREFIX,
             "textures/gui/schematic_rocket_GS1_Miner.png");
 
+    /** Upstream Galacticraft's bench texture, restored for the non-GTNH 14-slot layout. */
+    public static final ResourceLocation schematicTextureLegacy = new ResourceLocation(
+            AsteroidsModule.ASSET_PREFIX,
+            "textures/gui/schematic_astro_miner_legacy.png");
+
+    private final boolean legacyLayout;
     private int pageIndex;
 
     public GuiSchematicAstroMiner(InventoryPlayer par1InventoryPlayer, int x, int y, int z) {
         super(new ContainerSchematicAstroMiner(par1InventoryPlayer, x, y, z));
-        this.ySize = 203;
+        this.legacyLayout = CompatGates.useLegacyContent();
+        this.ySize = this.legacyLayout ? 221 : 203;
+    }
+
+    /** Texture matching the active bench layout. Also used by the NEI handler. */
+    public static ResourceLocation activeTexture() {
+        return CompatGates.useLegacyContent() ? schematicTextureLegacy : schematicTexture;
     }
 
     @Override
@@ -65,16 +78,23 @@ public class GuiSchematicAstroMiner extends GuiContainer implements ISchematicRe
 
     @Override
     protected void drawGuiContainerForegroundLayer(int par1, int par2) {
+        // The legacy bench is 18px taller and labels its inventory block lower down.
+        final int titleY = this.legacyLayout ? 32 : 7;
+        final int inventoryX = this.legacyLayout ? 8 : 14;
+        final int inventoryY = this.legacyLayout ? 129 : 110;
         this.fontRendererObj
-                .drawString(EnumColor.WHITE + GCCoreUtil.translate("schematic.astroMiner.name"), 7, 7, 0x404040);
-        this.fontRendererObj
-                .drawString(EnumColor.WHITE + GCCoreUtil.translate("container.inventory"), 14, 110, 0x404040);
+                .drawString(EnumColor.WHITE + GCCoreUtil.translate("schematic.astroMiner.name"), 7, titleY, 0x404040);
+        this.fontRendererObj.drawString(
+                EnumColor.WHITE + GCCoreUtil.translate("container.inventory"),
+                inventoryX,
+                inventoryY,
+                0x404040);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float par1, int par2, int par3) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mc.renderEngine.bindTexture(GuiSchematicAstroMiner.schematicTexture);
+        this.mc.renderEngine.bindTexture(GuiSchematicAstroMiner.activeTexture());
         final int var5 = (this.width - this.xSize) / 2;
         final int var6 = (this.height - this.ySize) / 2;
         this.drawTexturedModalRect(var5, var6, 0, 0, this.xSize, this.ySize);

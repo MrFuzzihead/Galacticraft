@@ -15,6 +15,8 @@ import net.minecraft.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
 import micdoodle8.mods.galacticraft.core.nei.LegacyRocketBenchNei;
+import micdoodle8.mods.galacticraft.planets.asteroids.nei.LegacyAstroMinerBenchNei;
+import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyAstroMinerRecipes;
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyTier3RocketRecipes;
 import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyCargoRocketRecipes;
 import micdoodle8.mods.galacticraft.planets.mars.recipe.legacy.LegacyTier2RocketRecipes;
@@ -199,6 +201,50 @@ class LegacyContentTest {
             assertNotNull(out, "bench " + bench + " has no output position");
             assertEquals(2, out.length);
             assertTrue(out[0] > 0 && out[1] > 0, "bench " + bench + " output position looks wrong");
+        }
+    }
+
+    // ---------------------------------------------------------------- Astro Miner bench
+
+    @Test
+    void astroMinerNeiTableCoversEverySlot() {
+        for (int slot = 1; slot <= LegacyAstroMinerRecipes.SLOT_COUNT; slot++) {
+            assertNotNull(LegacyAstroMinerBenchNei.position(slot), "NEI has no position for astro miner slot " + slot);
+        }
+        assertNull(LegacyAstroMinerBenchNei.position(0), "slot 0 is the output");
+        assertNull(
+                LegacyAstroMinerBenchNei.position(LegacyAstroMinerRecipes.SLOT_COUNT + 1),
+                "slot 15 does not exist on the legacy bench");
+    }
+
+    @Test
+    void astroMinerNeiPositionsAreUnique() {
+        final Set<Long> seen = new HashSet<>();
+        for (int slot = 1; slot <= LegacyAstroMinerRecipes.SLOT_COUNT; slot++) {
+            final int[] pos = LegacyAstroMinerBenchNei.position(slot);
+            final long key = (long) pos[0] << 32 | pos[1] & 0xFFFFFFFFL;
+            assertTrue(seen.add(key), "duplicate NEI position for astro miner slot " + slot);
+        }
+    }
+
+    @Test
+    void astroMinerRecipeStaysInsideTheLegacyBench() {
+        assumeTrue(recipesUsable(), "game classes are not on the test classpath");
+
+        final java.util.Map<Integer, ItemStack> input = LegacyAstroMinerRecipes.inputs();
+        assertEquals(
+                LegacyAstroMinerRecipes.SLOT_COUNT,
+                input.size(),
+                "the upstream astro miner recipe fills every one of the 14 slots");
+
+        for (final java.util.Map.Entry<Integer, ItemStack> slot : input.entrySet()) {
+            assertTrue(
+                    slot.getKey() >= 1 && slot.getKey() <= LegacyAstroMinerRecipes.SLOT_COUNT,
+                    "recipe uses slot " + slot.getKey() + " which the legacy bench does not have");
+            assertNotNull(slot.getValue(), "slot " + slot.getKey() + " must have a part");
+            assertNotNull(
+                    LegacyAstroMinerBenchNei.position(slot.getKey()),
+                    "recipe slot " + slot.getKey() + " has no NEI position");
         }
     }
 }

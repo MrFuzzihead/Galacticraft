@@ -540,10 +540,17 @@ otherwise.
 - [ ] `ContainerBuggyBench` / `SlotBuggyBench` / `InventoryBuggyBench` / `GuiSchematicBuggy` —
       dual layout: 19 craft slots (legacy) vs 35 (GT)
 - [ ] `LegacyBuggyRecipes` — metas 0–3
-- [ ] `ContainerSchematicAstroMiner` / `SlotSchematicAstroMiner` /
-      `InventorySchematicAstroMiner` / `GuiSchematicAstroMiner` — dual layout: inventory 15 (legacy) vs 30 (GT)
-- [ ] `LegacyAstroMinerRecipes`
-- [ ] Fix unconditioned GT item check in `SlotSchematicAstroMiner:86` (§4.2)
+- [x] `ContainerSchematicAstroMiner` — dual layout: 14 craft slots (legacy) vs 30 (GT)
+- [x] `SlotSchematicAstroMiner` — dual whitelist (`isLegacyItemValid` / `isGregTechItemValid`)
+- [x] `GuiSchematicAstroMiner` — legacy texture + `ySize` 221 vs 203, and the label offsets that go with it
+- [x] `AstroMinerRecipeHandler` — legacy texture + upstream's crop (0,-8,3,32,168,104); no transfer rect in legacy
+- [x] `LegacyAstroMinerRecipes` + `LegacyAstroMinerBenchNei` (NEI map population)
+- [x] `schematic_astro_miner_legacy.png` restored from `79be38a2b` (GTNH's
+      `schematic_astro_miner.png` is a different image, so a new filename keeps merges clean)
+- [x] Fix unconditioned GT item check in `SlotSchematicAstroMiner` (§4.2)
+- [ ] **Moon Buggy** — same shape, still to do:
+      `ContainerBuggyBench` / `SlotBuggyBench` / `GuiSchematicBuggy` / `BuggyRecipeHandler`,
+      `LegacyBuggyRecipes`, `buggybench_legacy.png`
 
 ### Pass 4 — gate hygiene
 
