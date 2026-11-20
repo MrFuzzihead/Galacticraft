@@ -73,6 +73,16 @@ side - so a bug here is almost certainly in the legacy branch or in a wrong `Com
 - [ ] On the rocket pages, the same check for slots 1-21 (these tables predate the buggy one but
       were verified against the container source, not in-game)
 
+**Expected, not bugs:**
+
+- The NASA Workbench shows **6 recipe tabs** (Rocket T1, Buggy, Rocket T2, Cargo Rocket, Rocket T3,
+  Astro Miner). Each comes from an `API.addRecipeCatalyst(nasaWorkbench, handler)` call added by
+  upstream `ff4c5c87b` (#151); this fork adds none. Rockets drop out if GalaxySpace is installed.
+- NEI draws its own `Page x/y` label (`nei.recipe.page`) at `guiTop + 17` in the header strip. Its
+  position comes from NEI's `initGui` (window size, GUI scale, `inventory.guirecipe.maxHeight` and
+  the tab-strip height) — **a handler's `drawBackground` cannot move or clip it**, because the
+  background is drawn first. If it looks crowded, it is NEI layout reacting to the tab strip.
+
 ## 7. Regression checks (the GTNH path must be untouched)
 
 Also worth one dedicated run: **GregTech installed, `dreamcraft` absent.** Before this branch,
