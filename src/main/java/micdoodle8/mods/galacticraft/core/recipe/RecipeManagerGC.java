@@ -26,6 +26,7 @@ import micdoodle8.mods.galacticraft.core.entities.EntityBuggy;
 import micdoodle8.mods.galacticraft.core.entities.EntityTier1Rocket;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
 import micdoodle8.mods.galacticraft.core.items.ItemBasic;
+import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyBuggyRecipes;
 import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyNasaWorkbenchRecipes;
 import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyOxygenTankRecipes;
 import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyTier1RocketRecipes;
@@ -626,6 +627,7 @@ public class RecipeManagerGC {
             LegacyNasaWorkbenchRecipes.register();
             LegacyOxygenTankRecipes.register();
             LegacyTier1RocketRecipes.register();
+            LegacyBuggyRecipes.register();
         } else {
             RecipeUtil.addRecipe(
                     new ItemStack(GCItems.oxTankLight, 1, GCItems.oxTankLight.getMaxDamage()),

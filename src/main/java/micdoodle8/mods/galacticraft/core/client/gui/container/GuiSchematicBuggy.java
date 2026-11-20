@@ -10,6 +10,7 @@ import micdoodle8.mods.galacticraft.api.recipe.ISchematicResultPage;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.inventory.ContainerBuggyBench;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.EnumColor;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 
@@ -19,11 +20,23 @@ public class GuiSchematicBuggy extends GuiContainerGC implements ISchematicResul
             GalacticraftCore.ASSET_PREFIX,
             "textures/gui/schematic_rocket_GS1_Buggy.png");
 
+    /** Upstream Galacticraft's bench texture, restored for the non-GTNH 19-slot layout. */
+    private static final ResourceLocation buggyBenchTextureLegacy = new ResourceLocation(
+            GalacticraftCore.ASSET_PREFIX,
+            "textures/gui/buggybench_legacy.png");
+
+    private final boolean legacyLayout;
     private int pageIndex;
 
     public GuiSchematicBuggy(InventoryPlayer par1InventoryPlayer) {
         super(new ContainerBuggyBench(par1InventoryPlayer, 0, 0, 0));
+        this.legacyLayout = CompatGates.useLegacyContent();
         this.ySize = 221;
+    }
+
+    /** Texture matching the active bench layout. Also used by the NEI handler. */
+    public static ResourceLocation activeTexture() {
+        return CompatGates.useLegacyContent() ? buggyBenchTextureLegacy : buggyBenchTexture;
     }
 
     @Override
@@ -66,14 +79,17 @@ public class GuiSchematicBuggy extends GuiContainerGC implements ISchematicResul
     protected void drawGuiContainerForegroundLayer(int par1, int par2) {
         this.fontRendererObj
                 .drawString(EnumColor.WHITE + GCCoreUtil.translate("schematic.moonbuggy.name"), 7, 7, 0x404040);
-        this.fontRendererObj
-                .drawString(EnumColor.WHITE + GCCoreUtil.translate("container.inventory"), 14, 128, 0x404040);
+        this.fontRendererObj.drawString(
+                EnumColor.WHITE + GCCoreUtil.translate("container.inventory"),
+                this.legacyLayout ? 8 : 14,
+                this.legacyLayout ? 127 : 128,
+                0x404040);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float par1, int par2, int par3) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mc.renderEngine.bindTexture(GuiSchematicBuggy.buggyBenchTexture);
+        this.mc.renderEngine.bindTexture(GuiSchematicBuggy.activeTexture());
         final int var5 = (this.width - this.xSize) / 2;
         final int var6 = (this.height - this.ySize) / 2;
         this.drawTexturedModalRect(var5, var6, 0, 0, this.xSize, this.ySize);

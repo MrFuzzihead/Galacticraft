@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 
 import org.junit.jupiter.api.Test;
 
+import micdoodle8.mods.galacticraft.core.nei.LegacyBuggyBenchNei;
 import micdoodle8.mods.galacticraft.core.nei.LegacyRocketBenchNei;
 import micdoodle8.mods.galacticraft.planets.asteroids.nei.LegacyAstroMinerBenchNei;
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.legacy.LegacyAstroMinerRecipes;
@@ -245,6 +246,67 @@ class LegacyContentTest {
             assertNotNull(
                     LegacyAstroMinerBenchNei.position(slot.getKey()),
                     "recipe slot " + slot.getKey() + " has no NEI position");
+        }
+    }
+
+    // ---------------------------------------------------------------- Moon Buggy bench
+
+    @Test
+    void buggyNeiTableCoversEverySlot() {
+        for (int slot = 1; slot <= LegacyBuggyRecipes.SLOT_COUNT; slot++) {
+            assertNotNull(LegacyBuggyBenchNei.position(slot), "NEI has no position for buggy slot " + slot);
+        }
+        assertNull(LegacyBuggyBenchNei.position(0), "slot 0 is the output");
+        assertNull(
+                LegacyBuggyBenchNei.position(LegacyBuggyRecipes.SLOT_COUNT + 1),
+                "slot 20 does not exist on the legacy bench");
+    }
+
+    @Test
+    void buggyNeiPositionsAreUnique() {
+        final Set<Long> seen = new HashSet<>();
+        for (int slot = 1; slot <= LegacyBuggyRecipes.SLOT_COUNT; slot++) {
+            final int[] pos = LegacyBuggyBenchNei.position(slot);
+            final long key = (long) pos[0] << 32 | pos[1] & 0xFFFFFFFFL;
+            assertTrue(seen.add(key), "duplicate NEI position for buggy slot " + slot);
+        }
+    }
+
+    @Test
+    void buggyVariantsPinEverySlotAndCarryStorageModules() {
+        assumeTrue(recipesUsable(), "game classes are not on the test classpath");
+
+        for (final LegacyBuggyRecipes.Variant variant : LegacyBuggyRecipes.variants()) {
+            assertEquals(
+                    LegacyBuggyRecipes.SLOT_COUNT,
+                    variant.input.size(),
+                    "every slot 1-19 must be pinned, otherwise the basic buggy also matches a cargo layout");
+            for (int slot = 1; slot <= LegacyBuggyRecipes.SLOT_COUNT; slot++) {
+                assertTrue(variant.input.containsKey(slot), "missing slot " + slot);
+                assertNotNull(LegacyBuggyBenchNei.position(slot), "recipe slot " + slot + " has no NEI position");
+            }
+        }
+    }
+
+    @Test
+    void buggyCargoAddonsAreStorageModulesNotChests() {
+        assumeTrue(recipesUsable(), "game classes are not on the test classpath");
+
+        // The fully-loaded variant puts a storage module in all three add-on slots.
+        LegacyBuggyRecipes.Variant full = null;
+        for (final LegacyBuggyRecipes.Variant variant : LegacyBuggyRecipes.variants()) {
+            if (variant.output.getItemDamage() == 3) {
+                full = variant;
+            }
+        }
+        assertNotNull(full, "expected a fully-loaded buggy variant (meta 3)");
+        for (final int slot : LegacyBuggyRecipes.CARGO_SLOTS) {
+            final ItemStack stack = full.input.get(slot);
+            assertNotNull(stack, "cargo slot " + slot + " must hold a storage module");
+            assertEquals(
+                    LegacyBuggyRecipes.STORAGE_MODULE_META,
+                    stack.getItemDamage(),
+                    "cargo slot " + slot + " should hold partBuggy meta 2");
         }
     }
 }

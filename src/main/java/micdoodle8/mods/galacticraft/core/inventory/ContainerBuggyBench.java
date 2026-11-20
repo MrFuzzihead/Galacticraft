@@ -9,6 +9,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 
 public class ContainerBuggyBench extends Container {
@@ -19,6 +20,78 @@ public class ContainerBuggyBench extends Container {
 
     public ContainerBuggyBench(InventoryPlayer inventory, int x, int y, int z) {
         this.worldObj = inventory.player.worldObj;
+
+        if (CompatGates.useLegacyContent()) {
+            this.addLegacySlots(inventory, x, y, z);
+        } else {
+            this.addGregTechSlots(inventory, x, y, z);
+        }
+
+        this.onCraftMatrixChanged(this.craftMatrix);
+    }
+
+    /**
+     * Upstream Galacticraft's buggy bench: 19 craft slots (4x3 body, 2x2 wheels, 3 cargo add-ons), matching
+     * {@code LegacyBuggyRecipes}. Coordinates taken verbatim from the last upstream commit before the GTNH fork
+     * (79be38a2b).
+     */
+    private void addLegacySlots(InventoryPlayer inventory, int x, int y, int z) {
+        final EntityPlayer player = inventory.player;
+        final int change = 27;
+
+        this.addSlotToContainer(
+                new SlotRocketBenchResult(player, this.craftMatrix, this.craftResult, 0, 142, 79 + change));
+
+        // Body
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                this.addSlotToContainer(
+                        new SlotBuggyBench(
+                                this.craftMatrix,
+                                col * 4 + row + 1,
+                                39 + col * 18,
+                                14 + row * 18 + change,
+                                x,
+                                y,
+                                z,
+                                player));
+            }
+        }
+
+        // Wheels
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 2; col++) {
+                this.addSlotToContainer(
+                        new SlotBuggyBench(
+                                this.craftMatrix,
+                                col * 2 + row + 13,
+                                21 + col * 72,
+                                14 + row * 54 + change,
+                                x,
+                                y,
+                                z,
+                                player));
+            }
+        }
+
+        // Cargo add-ons
+        for (int addon = 0; addon < 3; addon++) {
+            this.addSlotToContainer(
+                    new SlotBuggyBench(this.craftMatrix, 17 + addon, 93 + addon * 26, -15 + change, x, y, z, player));
+        }
+
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                this.addSlotToContainer(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 111 + row * 18 + change));
+            }
+        }
+        for (int col = 0; col < 9; col++) {
+            this.addSlotToContainer(new Slot(inventory, col, 8 + col * 18, 169 + change));
+        }
+    }
+
+    /** The GTNH layout (35 craft slots), unchanged. */
+    private void addGregTechSlots(InventoryPlayer inventory, int x, int y, int z) {
 
         // OUTPUT
         this.addSlotToContainer(
@@ -82,7 +155,6 @@ public class ContainerBuggyBench extends Container {
             }
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix);
     }
 
     @Override

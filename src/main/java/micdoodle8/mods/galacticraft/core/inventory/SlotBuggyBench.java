@@ -57,6 +57,51 @@ public class SlotBuggyBench extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemStack) {
+        if (CompatGates.useLegacyContent()) {
+            return this.isLegacyItemValid(itemStack);
+        }
+        return this.isGregTechItemValid(itemStack);
+    }
+
+    /**
+     * Upstream Galacticraft's whitelist for the original 19-slot bench: 11 heavy-plating body slots, the seat, four
+     * wheels and three cargo add-ons.
+     */
+    private boolean isLegacyItemValid(ItemStack itemStack) {
+        switch (this.index) {
+            // Body plating, with the cockpit seat in the middle
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+                return itemStack.getItem() == GCItems.heavyPlatingTier1;
+            case 6:
+                return itemStack.getItem() == GCItems.partBuggy && itemStack.getItemDamage() == 1;
+            // Wheels
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+                return itemStack.getItem() == GCItems.partBuggy && itemStack.getItemDamage() == 0;
+            // Storage
+            case 17:
+            case 18:
+            case 19:
+                return itemStack.getItem() == GCItems.partBuggy && itemStack.getItemDamage() == 2;
+            default:
+                return false;
+        }
+    }
+
+    /** The GTNH layout's whitelist (slots 1-35). */
+    private boolean isGregTechItemValid(ItemStack itemStack) {
         if (this.index == 1) {
             return itemStack.getItem() == GCItems.basicItem && itemStack.getItemDamage() == 19;
         }

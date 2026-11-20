@@ -9,7 +9,6 @@ import java.util.Set;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -19,20 +18,22 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicBuggy;
+import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.EnumColor;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 
 public class BuggyRecipeHandler extends TemplateRecipeHandler {
 
-    private static final ResourceLocation buggyGuiTexture = new ResourceLocation(
-            GalacticraftCore.ASSET_PREFIX,
-            "textures/gui/schematic_rocket_GS1_Buggy.png");
     public static final int x = -1;
     public static final int y = -12;
     public static final int tX = 3;
     public static final int tY = 4;
     public static final int w = 168;
     public static final int h = 130;
+
+    /** Crop upstream's handler uses for the restored 19-slot bench texture. */
+    private static final int LEGACY_X = 0;
+    private static final int LEGACY_Y = 0;
 
     public String getRecipeId() {
         return "galacticraft.buggy";
@@ -73,12 +74,20 @@ public class BuggyRecipeHandler extends TemplateRecipeHandler {
     @Override
     public void drawBackground(int recipe) {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiDraw.changeTexture(BuggyRecipeHandler.buggyGuiTexture);
-        GuiDraw.drawTexturedModalRect(x, y, tX, tY, w, h);
+        GuiDraw.changeTexture(GuiSchematicBuggy.activeTexture());
+        if (CompatGates.useLegacyContent()) {
+            GuiDraw.drawTexturedModalRect(LEGACY_X, LEGACY_Y, tX, tY, w, h);
+        } else {
+            GuiDraw.drawTexturedModalRect(x, y, tX, tY, w, h);
+        }
     }
 
     @Override
     public void loadTransferRects() {
+        if (CompatGates.useLegacyContent()) {
+            // Upstream's bench has no drag-transfer target.
+            return;
+        }
         this.transferRects.add(new RecipeTransferRect(new Rectangle(250, 126, 32, 32), this.getRecipeId()));
     }
 
@@ -146,7 +155,8 @@ public class BuggyRecipeHandler extends TemplateRecipeHandler {
 
     @Override
     public String getGuiTexture() {
-        return GalacticraftCore.TEXTURE_PREFIX + "textures/gui/schematic_rocket_GS1_Buggy.png";
+        return CompatGates.useLegacyContent() ? GalacticraftCore.TEXTURE_PREFIX + "textures/gui/buggybench_legacy.png"
+                : GalacticraftCore.TEXTURE_PREFIX + "textures/gui/schematic_rocket_GS1_Buggy.png";
     }
 
     @Override

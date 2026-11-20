@@ -25,6 +25,7 @@ import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicBuggy;
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicTier1Rocket;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
+import micdoodle8.mods.galacticraft.core.recipe.legacy.LegacyBuggyRecipes;
 import micdoodle8.mods.galacticraft.core.util.CompatGates;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
@@ -74,6 +75,7 @@ public class NEIGalacticraftConfig implements IConfigureNEI {
             // The handler above renders from NEIGalacticraftConfig#rocketBenchRecipes, which is never
             // populated. Fill it from the restored recipes.
             LegacyRocketBenchNei.populate(this);
+            this.populateLegacyBuggyBench();
         }
         BuggyRecipeHandler buggyHandler = new BuggyRecipeHandler();
         API.registerRecipeHandler(buggyHandler);
@@ -121,6 +123,18 @@ public class NEIGalacticraftConfig implements IConfigureNEI {
     @Override
     public String getVersion() {
         return Constants.VERSION;
+    }
+
+    /**
+     * Fills the Moon Buggy NEI display map. GTNH registers {@code BuggyRecipeHandler} but never populates the map it
+     * reads, so the page existed and listed nothing.
+     */
+    private void populateLegacyBuggyBench() {
+        for (final LegacyBuggyRecipes.Variant variant : LegacyBuggyRecipes.variants()) {
+            this.registerBuggyBenchRecipe(
+                    LegacyBuggyBenchNei.displayMap(variant.input),
+                    new PositionedStack(variant.output, LegacyBuggyBenchNei.OUTPUT[0], LegacyBuggyBenchNei.OUTPUT[1]));
+        }
     }
 
     public void registerIngotCompressorRecipe(HashMap<Integer, PositionedStack> input, PositionedStack output) {

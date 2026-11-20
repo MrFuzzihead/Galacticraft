@@ -537,9 +537,14 @@ otherwise.
 
 ### Pass 3 — benches whose GUI was redesigned (largest effort)
 
-- [ ] `ContainerBuggyBench` / `SlotBuggyBench` / `InventoryBuggyBench` / `GuiSchematicBuggy` —
-      dual layout: 19 craft slots (legacy) vs 35 (GT)
-- [ ] `LegacyBuggyRecipes` — metas 0–3
+- [x] `ContainerBuggyBench` — dual layout: 19 craft slots (legacy) vs 35 (GT)
+- [x] `SlotBuggyBench` — dual whitelist (`isLegacyItemValid` / `isGregTechItemValid`)
+- [x] `GuiSchematicBuggy` — legacy texture; ySize is 221 either way, only the inventory label moves
+- [x] `BuggyRecipeHandler` — legacy texture + upstream's crop (0,0,3,4,168,130); no transfer rect in legacy
+- [x] `LegacyBuggyRecipes` — 8 variants (basic + 7 cargo). Add-ons take `partBuggy` meta 2
+      (storage module), **not** chests, unlike the rockets
+- [x] `LegacyBuggyBenchNei` (NEI map population)
+- [x] `buggybench_legacy.png` restored from `79be38a2b`
 - [x] `ContainerSchematicAstroMiner` — dual layout: 14 craft slots (legacy) vs 30 (GT)
 - [x] `SlotSchematicAstroMiner` — dual whitelist (`isLegacyItemValid` / `isGregTechItemValid`)
 - [x] `GuiSchematicAstroMiner` — legacy texture + `ySize` 221 vs 203, and the label offsets that go with it
@@ -548,9 +553,7 @@ otherwise.
 - [x] `schematic_astro_miner_legacy.png` restored from `79be38a2b` (GTNH's
       `schematic_astro_miner.png` is a different image, so a new filename keeps merges clean)
 - [x] Fix unconditioned GT item check in `SlotSchematicAstroMiner` (§4.2)
-- [ ] **Moon Buggy** — same shape, still to do:
-      `ContainerBuggyBench` / `SlotBuggyBench` / `GuiSchematicBuggy` / `BuggyRecipeHandler`,
-      `LegacyBuggyRecipes`, `buggybench_legacy.png`
+- [x] **Moon Buggy** — done (see above)
 
 ### Pass 4 — gate hygiene
 

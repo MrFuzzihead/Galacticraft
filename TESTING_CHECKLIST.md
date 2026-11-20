@@ -45,8 +45,9 @@ Set `Content Mode` in `config/Galacticraft/core.conf` to test both paths without
 
 ## 5. Benches
 
-- [ ] Moon Buggy bench opens; the GregTech-only slots (8–11, 17–24) accept nothing but do not crash
-      *(expected until the legacy layout lands — see "Known gaps")*
+- [x] **Moon Buggy** — bench shows the original 19-slot layout (4x3 body with the seat in the
+      middle, 2x2 wheels, 3 cargo add-ons), every slot accepts its part, and all 8 variants craft
+      (0–3 storage modules → `buggy:0-3`). NEI shows the same page over the legacy texture.
 - [x] **Astro Miner** — bench shows the original 14-slot miner-shaped layout, every slot accepts
       its part (plating, orion drives, advanced wafer, chests, beam core, flag pole), and the
       machine crafts. NEI shows the same page over the legacy texture.
@@ -77,11 +78,11 @@ Switch Content Mode to `1` (or install the GTNH pack) and confirm:
 
 ## Known gaps
 
-These are documented in `GTNH_FORK_AUDIT.md` §3.5–3.7 and are **not** implemented yet:
+Both redesigned benches (Moon Buggy and Astro Miner) are restored. What is still missing:
 
-- Moon Buggy bench: GTNH redesigned the container from 19 to 35 craft slots
-  (`InventoryBuggyBench` 32 → 36) and recompressed `buggybench.png`. Restoring the vanilla layout
-  needs a dual container/slot/GUI path and the old texture asset.
-- Moon Buggy bench: dual-layout work still pending (see §6 Pass 3 in the audit).
-- CraftGuide / MFR / BuildCraft MJ / Mekanism integration: removed in the first GTNH commit; not
-  restored.
+- **CraftGuide / MFR / BuildCraft MJ / Mekanism** integration: removed in GTNH's very first commit;
+  not restored (see `GTNH_FORK_AUDIT.md` §3.10).
+- **Gas Liquefier / Methane Synthesizer NEI pages**: the handlers were deleted in `697f953cd` and
+  have not been re-registered. The machines themselves work.
+- **NEI rocket pages require GalaxySpace to be absent** — that ordering is upstream's
+  (`if (!GalaxySpaceLoaded)`), not ours.
