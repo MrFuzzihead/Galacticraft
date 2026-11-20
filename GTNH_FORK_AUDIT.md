@@ -1,8 +1,9 @@
 # GTNH-fork Galacticraft — non-GTNH regression audit & restoration plan
 
 Audited against:
-- **Fork HEAD:** `5c02df91a` (`GTNewHorizons/Galacticraft` master) — identical to tag **`3.4.32-GTNH`**
-  (`git rev-list --count 3.4.32-GTNH..HEAD` = 0)
+- **Upstream HEAD at audit time:** `5c02df91a` (`GTNewHorizons/Galacticraft` master), tag
+  **`3.4.32-GTNH`**. The fork is now rebased onto **`61f55046d`** = tag **`3.5.1-GTNH`**; the deltas
+  that affect this document are noted inline (§3.9 in particular) and in §8.
 - **Baseline (last upstream commit before the GTNH fork):** `79be38a2b` (2017-12-01, "Update
   GCPlayerHandler.java") — the direct parent of the first GTNH commit `52ea597d1`
 - **347 commits** exist between the fork point and HEAD
@@ -35,9 +36,9 @@ they are exactly the progression spine of the mod:
 | 5 | **Moon Buggy** bench recipes (basic + 7 cargo variants) | GTNH coremod (per #89) — *and the bench GUI was redesigned* |
 | 6 | **Astro Miner** NASA-bench recipe | GTNH coremod (per #89) — *and the bench GUI was redesigned* |
 
-Plus seven **NEI handlers** unregistered — recipe *and* usage — so even the surviving recipes are
-invisible, and five **mod-integration features** dropped (`CraftGuide`, MFR Slimelings, Mekanism
-energy/gas, BuildCraft MJ, version checker).
+Plus NEI pages that are registered but whose display maps are **never populated** (§3.9), so every
+rocket/bench page renders as an empty box, and five **mod-integration features** dropped
+(`CraftGuide`, MFR Slimelings, Mekanism energy/gas, BuildCraft MJ, version checker).
 
 **And the gate is keyed to the wrong mod.** Every recipe gate tests `dreamcraft` (the GTNH
 *pack* mod), while "GregTech is installed" is a different id — and GC uses *three* different ones
@@ -250,32 +251,44 @@ recipe families in §3 were already commented out in 2020 and hard-deleted in 20
 - **Effect:** unlike the buggy and astro miner benches, **the cargo rocket bench GUI needs no
   dual-layout work** — only the three recipes have to come back.
 
-### 3.9 NEI: seven recipe/usage handlers unregistered
+### 3.9 NEI: pages registered but empty (maps never populated)
 
-GTNH removed NEI integration for content it believed the coremod/`GalaxySpace` would supply. These
-are **not** gated — they are commented out or deleted for everyone:
+GTNH removed NEI integration for content it believed the coremod/`GalaxySpace` would supply, then
+partially put the handler registrations back in `ff4c5c87b` ("fix nei recipe handler", #151,
+2026-10-13). **The display maps were never restored in either pass**, so today the pages exist and
+list nothing.
 
-| File | Handler | Status at HEAD | Commit |
-|---|---|---|---|
-| `core/nei/NEIGalacticraftConfig` | `RocketT1RecipeHandler` | commented, `// Handled by GalaxySpace` | `459cfc415` (2020-08-23) |
-| `core/nei/NEIGalacticraftConfig` | `IngotCompressorRecipeHandler` | commented, `// Not used in GTNH` | `35a89e610` (2021-01-16) |
-| `core/nei/NEIGalacticraftConfig` | `ElectricIngotCompressorRecipeHandler` | commented, `// Not used in GTNH` | `35a89e610` |
-| `planets/mars/nei/NEIGalacticraftMarsConfig` | `RocketT2RecipeHandler` | commented → deleted | `459cfc415` → `697f953cd` |
-| `planets/mars/nei/NEIGalacticraftMarsConfig` | `GasLiquefierRecipeHandler` | deleted | `697f953cd` |
-| `planets/mars/nei/NEIGalacticraftMarsConfig` | `MethaneSynthesizerRecipeHandler` | deleted | `697f953cd` |
-| `planets/asteroids/nei/NEIGalacticraftAsteroidsConfig` | `RocketT3RecipeHandler` | commented → deleted | `459cfc415` → `697f953cd` |
-| `planets/*/nei/*Config` | recipe **map population** (`registerRocketBenchRecipe`, `registerCargoBenchRecipe`, `registerBuggyBenchRecipe`, `registerAstroMinerRecipe`) | deleted | `697f953cd` |
+| File | Handler / data | Status |
+|---|---|---|
+| `core/nei/NEIGalacticraftConfig` | `RocketT1RecipeHandler` + map | registered (when GalaxySpace absent) since #151; **map never populated** |
+| `core/nei/NEIGalacticraftConfig` | `BuggyRecipeHandler` + map | registered; **map never populated** |
+| `core/nei/NEIGalacticraftConfig` | `IngotCompressorRecipeHandler` | still commented, `// Not used in GTNH` (`35a89e610`) |
+| `core/nei/NEIGalacticraftConfig` | `ElectricIngotCompressorRecipeHandler` | still commented, `// Not used in GTNH` |
+| `planets/mars/nei/NEIGalacticraftMarsConfig` | `RocketT2RecipeHandler` + map | registered since #151; **map never populated** |
+| `planets/mars/nei/NEIGalacticraftMarsConfig` | `CargoRocketRecipeHandler` + map | registered since #151; **map never populated** |
+| `planets/mars/nei/NEIGalacticraftMarsConfig` | `GasLiquefierRecipeHandler`, `MethaneSynthesizerRecipeHandler` | still absent (`697f953cd`) |
+| `planets/asteroids/nei/NEIGalacticraftAsteroidsConfig` | `RocketT3RecipeHandler` + map | registered since #151; **map never populated** |
+| `planets/asteroids/nei/NEIGalacticraftAsteroidsConfig` | `AstroMinerRecipeHandler` + map | registered since #151; **map never populated** |
 
-Secondary damage: `NEIGalacticraftMarsConfig.loadConfig()` no longer calls `registerRecipes()` at
-all, so the **Gas Liquefier / Methane Synthesizer** NEI pages are empty even though those machines
-still work; likewise `NEIGalacticraftAsteroidsConfig` never calls its `registerRecipes()`.
+Mechanically: `NEIGalacticraftConfig.registerRocketBenchRecipe` / `registerBuggyBenchRecipe` /
+`registerCargoBenchRecipe` / `registerAstroMinerRecipe` have **no callers anywhere in the tree**. The
+handlers read static maps that stay empty forever.
 
-The remaining core handlers (`BuggyRecipeHandler`, `RefineryRecipeHandler`,
-`CircuitFabricatorRecipeHandler`) are still registered — but `BuggyRecipeHandler` reads a static map
-that is now never populated, so it shows nothing.
+Two further notes:
 
-- **Effect:** ~all GC machine/bench recipes are invisible in NEI. Exactly the symptom
+- The compressor maps *are* filled — `NEIGalacticraftConfig.registerRecipes()` calls
+  `addIngotCompressorRecipes()`, which walks the live `CompressorRecipes` list. Only the handler
+  registration is missing, so those two machines work but have no NEI page.
+- `registerRecipes()` is also where the Refinery and Circuit Fabricator display data come from, so
+  those pages are fine.
+
+- **Effect:** every NASA-bench and machine recipe page renders as an empty box. Exactly the symptom
   `FuzziTweaks/.../mixins/late/galacticraft/NEIGalacticraftConfigMixin.java` works around today.
+
+> **Restoration note (implemented):** because upstream now registers the handlers itself, the fork
+> only has to *populate the maps* — `LegacyRocketBenchNei.populate()` and the per-planet
+> `addLegacyBenchRecipes()` / `addLegacyRocketBenchRecipes()` build them from the same variant lists
+> the recipes are registered from. Registering the handlers as well would double every page.
 
 ### 3.10 Mod-integration features dropped
 
@@ -569,6 +582,27 @@ These use `!Loader.isModLoaded("dreamcraft")` and are correct as-is:
 | NEI item hiding (steel/meteoric/desh/titanium items) | `core/nei/NEIGalacticraftConfig` (`:54`) |
 
 No action needed on any of these beyond switching the predicate per §5.2 if you want it centralised.
+
+---
+
+## 8. Changes since the audit (3.4.32 → 3.5.1)
+
+The fork was rebased from `5c02df91a` (`3.4.32-GTNH`) onto `61f55046d` (`3.5.1-GTNH`), 8 commits.
+Two of them matter here:
+
+| Commit | Change | Effect on this document |
+|---|---|---|
+| `ff4c5c87b` | "fix nei recipe handler" (#151) | Re-registers `RocketT1/T2/T3`, `CargoRocket`, `AstroMiner` and `Buggy` handlers (rockets only when GalaxySpace is absent) and adds `API.addRecipeCatalyst(nasaWorkbench, …)` plus GUI overlay handlers. **The display maps are still never populated**, so §3.9 becomes "registered but empty" rather than "unregistered". Restoration therefore only fills the maps — registering handlers too would duplicate every page. |
+| `61f55046d` | "Various exploit fixes" (#156) | Unrelated to the restoration. |
+
+Also of note: upstream creates the rocket/bench containers through shared helpers now
+(`ContainerSchematicTier2Rocket` lost ~120 lines), but **all slot indices and coordinates are
+unchanged**, so the NEI coordinate tables in `LegacyRocketBenchNei` still match. The
+`LegacyContentTest` slot/position assertions are the guard for exactly this.
+
+A branch `disambiguate-nasa-workbench-schematics` exists upstream but is unmerged; it appears to
+concern schematic item disambiguation, not recipes. Re-check it if it lands.
+
 
 ---
 
