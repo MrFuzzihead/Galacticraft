@@ -57,6 +57,7 @@ Set `Content Mode` in `config/Galacticraft/core.conf` to test both paths without
 ## 6. NEI completeness
 
 - [ ] Ingot Compressor and Electric Ingot Compressor have recipe pages
+- [ ] Gas Liquefier and Methane Synthesizer have recipe pages
 - [ ] Refinery, Circuit Fabricator, Buggy and rocket pages render without a missing-texture crash
 
 ## 7. Regression checks (the GTNH path must be untouched)
@@ -82,7 +83,5 @@ Both redesigned benches (Moon Buggy and Astro Miner) are restored. What is still
 
 - **CraftGuide / MFR / BuildCraft MJ / Mekanism** integration: removed in GTNH's very first commit;
   not restored (see `GTNH_FORK_AUDIT.md` §3.10).
-- **Gas Liquefier / Methane Synthesizer NEI pages**: the handlers were deleted in `697f953cd` and
-  have not been re-registered. The machines themselves work.
 - **NEI rocket pages require GalaxySpace to be absent** — that ordering is upstream's
   (`if (!GalaxySpaceLoaded)`), not ours.

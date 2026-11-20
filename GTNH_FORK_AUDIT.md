@@ -266,7 +266,7 @@ list nothing.
 | `core/nei/NEIGalacticraftConfig` | `ElectricIngotCompressorRecipeHandler` | still commented, `// Not used in GTNH` |
 | `planets/mars/nei/NEIGalacticraftMarsConfig` | `RocketT2RecipeHandler` + map | registered since #151; **map never populated** |
 | `planets/mars/nei/NEIGalacticraftMarsConfig` | `CargoRocketRecipeHandler` + map | registered since #151; **map never populated** |
-| `planets/mars/nei/NEIGalacticraftMarsConfig` | `GasLiquefierRecipeHandler`, `MethaneSynthesizerRecipeHandler` | still absent (`697f953cd`) |
+| `planets/mars/nei/NEIGalacticraftMarsConfig` | `GasLiquefierRecipeHandler`, `MethaneSynthesizerRecipeHandler` | registered since #151? **no** — handlers absent (`697f953cd`) while `registerRecipes()` *does* fill both maps, so this is the same shape as the compressor bug |
 | `planets/asteroids/nei/NEIGalacticraftAsteroidsConfig` | `RocketT3RecipeHandler` + map | registered since #151; **map never populated** |
 | `planets/asteroids/nei/NEIGalacticraftAsteroidsConfig` | `AstroMinerRecipeHandler` + map | registered since #151; **map never populated** |
 
@@ -279,8 +279,11 @@ Two further notes:
 - The compressor maps *are* filled — `NEIGalacticraftConfig.registerRecipes()` calls
   `addIngotCompressorRecipes()`, which walks the live `CompressorRecipes` list. Only the handler
   registration is missing, so those two machines work but have no NEI page.
-- `registerRecipes()` is also where the Refinery and Circuit Fabricator display data come from, so
-  those pages are fine.
+- `registerRecipes()` is also where the Refinery, Circuit Fabricator **and the Gas Liquefier /
+  Methane Synthesizer** display data come from. The first two have their handlers registered; the
+  last two do not, so they are the same "data present, registration missing" bug as the compressors
+  and are restored the same way (corrected: an earlier revision of this document claimed the
+  liquefier maps were empty — they are not).
 
 - **Effect:** every NASA-bench and machine recipe page renders as an empty box. Exactly the symptom
   `FuzziTweaks/.../mixins/late/galacticraft/NEIGalacticraftConfigMixin.java` works around today.

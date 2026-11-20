@@ -45,6 +45,12 @@ public class NEIGalacticraftMarsConfig implements IConfigureNEI {
         }
         if (CompatGates.useLegacyContent()) {
             this.addLegacyBenchRecipes();
+            // registerRecipes() above fills both maps, but GTNH removed the handler
+            // registrations in 697f953cd, so the machines had no NEI pages at all.
+            API.registerRecipeHandler(new GasLiquefierRecipeHandler());
+            API.registerUsageHandler(new GasLiquefierRecipeHandler());
+            API.registerRecipeHandler(new MethaneSynthesizerRecipeHandler());
+            API.registerUsageHandler(new MethaneSynthesizerRecipeHandler());
         }
         CargoRocketRecipeHandler cargoRocketHandler = new CargoRocketRecipeHandler();
         API.registerRecipeHandler(cargoRocketHandler);
